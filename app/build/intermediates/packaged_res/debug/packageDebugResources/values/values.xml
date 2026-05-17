@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Boat Tracker</string>
+    <string name="broadcast_domain">Your data is sent to this server</string>
+    <string name="broadcast_off_warning">Your position is not visible to the organizers!</string>
+    <string name="broadcast_position">Broadcast position</string>
+    <string name="choose_event">Choose your event</string>
+    <string name="communication_error">Communication error.</string>
+    <string name="coordinates_degrees_format">%1$s°, %2$s°</string>
+    <string name="coordinates_format">%1$s, %2$s</string>
+    <string name="current_gps">Current GPS</string>
+    <string name="dismiss">x</string>
+    <string name="language">Language</string>
+    <string name="language_english">English</string>
+    <string name="language_hungarian">Magyar</string>
+    <string name="last_broadcast">Last broadcast</string>
+    <string name="messages">Messages</string>
+    <string name="ship">Ship</string>
+    <string name="startup_error_body">Unable to fetch configuration from the server. This might be a network issue or the server may be down at the moment.\n\n Please try again later or contact your event organizer!</string>
+    <string name="startup_error_subtitle">GPS Boat Tracker application.</string>
+    <string name="tracking_notification_channel">Boat tracking</string>
+    <string name="tracking_notification_text">Broadcasting position</string>
+    <string name="unknown_value">-</string>
+    <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:colorAccent">#0B6E4F</item>
+    </style>
+</resources>
