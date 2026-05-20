@@ -21,4 +21,9 @@
     <string name="coordinates_degrees_format">%1$s°, %2$s°</string>
     <string name="tracking_notification_channel">Boat tracking</string>
     <string name="tracking_notification_text">Broadcasting position</string>
+    <string name="racing_rules">Basic racing rules</string>
+    <string name="rule_port_starboard">Port tack must keep clear of starboard tack.</string>
+    <string name="rule_windward_leeward">Windward boat must keep clear of leeward boat.</string>
+    <string name="rule_overtaking">Overtaking boat must keep clear.</string>
+    <string name="rule_mark_room">At a rounding mark, outside boats must give room to the inside boat.</string>
 </resources>

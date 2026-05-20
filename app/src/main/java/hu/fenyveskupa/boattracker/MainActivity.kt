@@ -512,6 +512,8 @@ class MainActivity : Activity() {
         }
         content.addView(messageList)
 
+        addRulesSection(content)
+
         setContentView(root)
     }
 
@@ -719,6 +721,47 @@ class MainActivity : Activity() {
                 bottomMargin = dp(8)
             })
         }
+    }
+
+    private fun addRulesSection(parent: LinearLayout) {
+        val title = TextView(this).apply {
+            setText(R.string.racing_rules)
+            textSize = TEXT_LABEL
+            setTextColor(COLOR_MUTED)
+            includeFontPadding = false
+            setPadding(0, dp(18), 0, dp(8))
+        }
+        parent.addView(title)
+        addRuleCard(parent, R.drawable.rule_port_starboard, R.string.rule_port_starboard)
+        addRuleCard(parent, R.drawable.rule_windward_leeward, R.string.rule_windward_leeward)
+        addRuleCard(parent, R.drawable.rule_overtaking, R.string.rule_overtaking)
+        addRuleCard(parent, R.drawable.rule_mark_room, R.string.rule_mark_room)
+    }
+
+    private fun addRuleCard(parent: LinearLayout, imageRes: Int, textRes: Int) {
+        val card = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            background = getDrawable(R.drawable.message_list_item_background)
+            setPadding(dp(10), dp(8), dp(10), dp(8))
+        }
+        val image = ImageView(this).apply {
+            setImageResource(imageRes)
+            scaleType = ImageView.ScaleType.FIT_CENTER
+        }
+        card.addView(image, LinearLayout.LayoutParams(dp(104), dp(72)).apply {
+            rightMargin = dp(10)
+        })
+        val text = TextView(this).apply {
+            setText(textRes)
+            textSize = TEXT_LABEL
+            setTextColor(COLOR_TEXT)
+            includeFontPadding = false
+        }
+        card.addView(text, LinearLayout.LayoutParams(0, -2, 1f))
+        parent.addView(card, LinearLayout.LayoutParams(-1, -2).apply {
+            bottomMargin = dp(8)
+        })
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()

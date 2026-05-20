@@ -22,6 +22,11 @@ int string language_english 0x7f020014
 int string language_hungarian 0x7f020015
 int string last_broadcast 0x7f02000a
 int string messages 0x7f02000b
+int string racing_rules 0x7f020016
+int string rule_mark_room 0x7f020017
+int string rule_overtaking 0x7f020018
+int string rule_port_starboard 0x7f020019
+int string rule_windward_leeward 0x7f02001a
 int string ship 0x7f02000c
 int string startup_error_body 0x7f020011
 int string startup_error_subtitle 0x7f020012

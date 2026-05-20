@@ -23,6 +23,11 @@ string language_english
 string language_hungarian
 string last_broadcast
 string messages
+string racing_rules
+string rule_mark_room
+string rule_overtaking
+string rule_port_starboard
+string rule_windward_leeward
 string ship
 string startup_error_body
 string startup_error_subtitle

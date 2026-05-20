@@ -21,4 +21,9 @@
     <string name="coordinates_degrees_format">%1$s°, %2$s°</string>
     <string name="tracking_notification_channel">Hajó követése</string>
     <string name="tracking_notification_text">Pozíció küldése</string>
+    <string name="racing_rules">Alapvető versenyszabályok</string>
+    <string name="rule_port_starboard">A balcsapáson haladó hajó kitér a jobbcsapáson haladónak.</string>
+    <string name="rule_windward_leeward">A szél felőli hajó kitér a szél alatti hajónak.</string>
+    <string name="rule_overtaking">Az előző hajó köteles kitérni.</string>
+    <string name="rule_mark_room">Pályajelnél a külső hajók elegendő helyet adnak a belső hajónak.</string>
 </resources>
