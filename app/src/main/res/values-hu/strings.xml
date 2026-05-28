@@ -26,4 +26,5 @@
     <string name="rule_windward_leeward">A szél felőli hajó kitér a szél alatti hajónak.</string>
     <string name="rule_overtaking">Az előző hajó köteles kitérni.</string>
     <string name="rule_mark_room">Pályajelnél a külső hajók elegendő helyet adnak a belső hajónak.</string>
+    <string name="tacking_before_other_not_allowed">Krajcolás közben másokat akadályozni tilos!</string>
 </resources>

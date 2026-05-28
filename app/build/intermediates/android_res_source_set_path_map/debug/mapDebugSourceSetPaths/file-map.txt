@@ -1,8 +1,0 @@
-hu.fenyveskupa.boattracker.app-pngs-0 /home/pentek.gabor@ad.mikrum.hu/pentike/gps/app/build/generated/res/pngs/debug
-hu.fenyveskupa.boattracker.app-updated_navigation_xml-1 /home/pentek.gabor@ad.mikrum.hu/pentike/gps/app/build/generated/updated_navigation_xml/debug
-hu.fenyveskupa.boattracker.app-packageDebugResources-2 /home/pentek.gabor@ad.mikrum.hu/pentike/gps/app/build/intermediates/incremental/debug/packageDebugResources/merged.dir
-hu.fenyveskupa.boattracker.app-packageDebugResources-3 /home/pentek.gabor@ad.mikrum.hu/pentike/gps/app/build/intermediates/incremental/debug/packageDebugResources/stripped.dir
-hu.fenyveskupa.boattracker.app-debug-4 /home/pentek.gabor@ad.mikrum.hu/pentike/gps/app/build/intermediates/merged_res/debug/mergeDebugResources
-hu.fenyveskupa.boattracker.app-debug-5 /home/pentek.gabor@ad.mikrum.hu/pentike/gps/app/src/debug/res
-hu.fenyveskupa.boattracker.app-main-6 /home/pentek.gabor@ad.mikrum.hu/pentike/gps/app/src/main/res
-gradleHome-0 /home/pentek.gabor@ad.mikrum.hu/.gradle

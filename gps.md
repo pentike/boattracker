@@ -54,6 +54,7 @@ it has a main screen displaying
 - a switch with witch you may turn off broadcasting your position on by default
   - if turned off a warning notice saying "Your position is not visible to the organizers!"
 - the logo of the competition in the background
+- Racing rules list
 - message list
 
 # Communication with the backend server
@@ -118,3 +119,16 @@ use platform best practice for string translation
 create hungarian translation and add a language selector before the server line
 the language selector only displays the current language and if the user taps on it he can
   select from the available languages
+
+
+# Racing rules
+
+add simple list for sailboat racing rules having an image and a description at the bottom of the main screen before the message list. The rulesa are:
+  1. port track must keep clear of starboard track
+  2. windward boat must keep clear of leeward boat
+  3. board overtaking must keep clear
+  4. rounding mark outside boats must give enough room to the inside boat
+  see https://dockstahavet.se/blog/basic-rules-of-sailing-racing for samples
+
+if the user taps on a rule, open a new screen with the image for that specific rule. the
+  screen can be closed with standard back movement or an x in the corner

@@ -26,4 +26,5 @@
     <string name="rule_windward_leeward">Windward boat must keep clear of leeward boat.</string>
     <string name="rule_overtaking">Overtaking boat must keep clear.</string>
     <string name="rule_mark_room">At a rounding mark, outside boats must give room to the inside boat.</string>
+    <string name="tacking_before_other_not_allowed">Krajcolás közben másokat akadályozni tilos!</string>
 </resources>

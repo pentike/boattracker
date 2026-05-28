@@ -29,6 +29,10 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".RuleDetailActivity"
+            android:exported="false" />
+
         <service
             android:name=".TrackerService"
             android:exported="false"

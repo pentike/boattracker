@@ -34,16 +34,16 @@ const server = http.createServer((req, res) => {
       logo: `https://fenyvesvit.hu/sites/fenyvesvit.hu/themes/adt_higherground/logo.png5`,
       event: "3. Késő Pál Fenyves Kupa",
       motto: "A szél legyen velünk!",
-      url: `https://fenyveskupa.hu/api/verseny/harmadik-keso-pal-fenyves-kupa/pozicio/hajok`,
-      //url: `http://10.0.2.2:${port}/verseny/harmadik-keso-pal-fenyves-kupa/pozicio/hajok`,
+//      url: `https://fenyveskupa.hu/api/verseny/harmadik-keso-pal-fenyves-kupa/pozicio/hajok`,
+      url: `http://10.0.2.2:${port}/verseny/harmadik-keso-pal-fenyves-kupa/pozicio/hajok`,
     }));
     return;
   }
 
   if (req.method === "GET") {
     const host = req.headers.host || `10.0.2.2:${port}`;
-    const initUrl = `https://fenyveskupa.hu/api/verseny/harmadik-keso-pal-fenyves-kupa/pozicio/init?hajo=pentike-teszt&nevezesId=test`;
-    //const initUrl = `http://10.0.2.2:${port}/api/pozicio/init?hajo=pentike-teszt&nevezesId=test`;
+    //const initUrl = `https://fenyveskupa.hu/api/verseny/harmadik-keso-pal-fenyves-kupa/pozicio/init?hajo=pentike-teszt&nevezesId=test`;
+    const initUrl = `http://10.0.2.2:${port}/api/pozicio/init?hajo=pentike-teszt&nevezesId=test`;
     const deepLink = `boattracker:${initUrl}`;
 
     res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
@@ -91,7 +91,7 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({
       f: Number(process.env.FREQUENCY || 30),
-      msg: postCount > 0 && postCount % 20 === 0
+      msg: postCount > 0 && postCount % 2 === 0
         ? process.env.MESSAGE || `Test message after request ${postCount}`
         : "",
     }));

@@ -736,6 +736,7 @@ class MainActivity : Activity() {
         addRuleCard(parent, R.drawable.rule_windward_leeward, R.string.rule_windward_leeward)
         addRuleCard(parent, R.drawable.rule_overtaking, R.string.rule_overtaking)
         addRuleCard(parent, R.drawable.rule_mark_room, R.string.rule_mark_room)
+        addRuleCard(parent, R.drawable.rule_mark_room, R.string.tacking_before_other_not_allowed)
     }
 
     private fun addRuleCard(parent: LinearLayout, imageRes: Int, textRes: Int) {
@@ -744,6 +745,14 @@ class MainActivity : Activity() {
             gravity = Gravity.CENTER_VERTICAL
             background = getDrawable(R.drawable.message_list_item_background)
             setPadding(dp(10), dp(8), dp(10), dp(8))
+            isClickable = true
+            isFocusable = true
+            setOnClickListener {
+                startActivity(
+                    Intent(this@MainActivity, RuleDetailActivity::class.java)
+                        .putExtra(RuleDetailActivity.EXTRA_IMAGE_RES, imageRes),
+                )
+            }
         }
         val image = ImageView(this).apply {
             setImageResource(imageRes)
