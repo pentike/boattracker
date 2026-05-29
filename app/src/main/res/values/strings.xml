@@ -22,9 +22,14 @@
     <string name="tracking_notification_channel">Boat tracking</string>
     <string name="tracking_notification_text">Broadcasting position</string>
     <string name="racing_rules">Basic racing rules</string>
-    <string name="rule_port_starboard">Port tack must keep clear of starboard tack.</string>
-    <string name="rule_windward_leeward">Windward boat must keep clear of leeward boat.</string>
-    <string name="rule_overtaking">Overtaking boat must keep clear.</string>
-    <string name="rule_mark_room">At a rounding mark, outside boats must give room to the inside boat.</string>
-    <string name="tacking_before_other_not_allowed">Krajcolás közben másokat akadályozni tilos!</string>
+    <string name="rule_10_title">10 ON OPPOSITE TACKS</string>
+    <string name="rule_10_description">When boats are on opposite tacks, a port-tack boat shall keep clear of a starboard-tack boat.</string>
+    <string name="rule_11_title">11 ON THE SAME TACK, OVERLAPPED</string>
+    <string name="rule_11_description">When boats are on the same tack and overlapped, a windward boat shall keep clear of a leeward boat.</string>
+    <string name="rule_12_title">12 ON THE SAME TACK, NOT OVERLAPPED</string>
+    <string name="rule_12_description">When boats are on the same tack and not overlapped, a boat clear astern shall keep clear of a boat clear ahead.</string>
+    <string name="rule_13_title">13 WHILE TACKING</string>
+    <string name="rule_13_description">After a boat passes head to wind, she shall keep clear of other boats until she is on a close-hauled course. During that time rules 10, 11 and 12 do not apply. If two boats are subject to this rule at the same time, the one on the other\'s port side or the one astern shall keep clear.</string>
+    <string name="rules_book_link">MVSZ szabálykönyv 2. rész</string>
+    <string name="rules_book_url">https://cdn.hunsail.hu/uploads/2025/04/rrs_szabalykonyv_2025-2028_eng-hun_oldalpar_verzio.pdf</string>
 </resources>

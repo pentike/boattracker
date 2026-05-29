@@ -10,6 +10,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.BitmapFactory
+import android.graphics.Paint
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
@@ -496,6 +497,8 @@ class MainActivity : Activity() {
         addLanguageSelector(content)
         domainValue = addInfoRow(content, R.string.broadcast_domain, showSendingDot = true)
 
+        addRulesSection(content)
+
         messageListTitle = TextView(this).apply {
             setText(R.string.messages)
             textSize = TEXT_LABEL
@@ -511,8 +514,6 @@ class MainActivity : Activity() {
             visibility = View.GONE
         }
         content.addView(messageList)
-
-        addRulesSection(content)
 
         setContentView(root)
     }
@@ -732,14 +733,34 @@ class MainActivity : Activity() {
             setPadding(0, dp(18), 0, dp(8))
         }
         parent.addView(title)
-        addRuleCard(parent, R.drawable.rule_port_starboard, R.string.rule_port_starboard)
-        addRuleCard(parent, R.drawable.rule_windward_leeward, R.string.rule_windward_leeward)
-        addRuleCard(parent, R.drawable.rule_overtaking, R.string.rule_overtaking)
-        addRuleCard(parent, R.drawable.rule_mark_room, R.string.rule_mark_room)
-        addRuleCard(parent, R.drawable.rule_mark_room, R.string.tacking_before_other_not_allowed)
+        addRuleCard(
+            parent,
+            R.drawable.rule_port_starboard,
+            R.string.rule_10_title,
+            R.string.rule_10_description,
+        )
+        addRuleCard(
+            parent,
+            R.drawable.rule_windward_leeward,
+            R.string.rule_11_title,
+            R.string.rule_11_description,
+        )
+        addRuleCard(
+            parent,
+            R.drawable.rule_overtaking,
+            R.string.rule_12_title,
+            R.string.rule_12_description,
+        )
+        addRuleCard(
+            parent,
+            R.drawable.rule_tacking,
+            R.string.rule_13_title,
+            R.string.rule_13_description,
+        )
+        addRulesLink(parent)
     }
 
-    private fun addRuleCard(parent: LinearLayout, imageRes: Int, textRes: Int) {
+    private fun addRuleCard(parent: LinearLayout, imageRes: Int, titleRes: Int, descriptionRes: Int) {
         val card = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -750,7 +771,9 @@ class MainActivity : Activity() {
             setOnClickListener {
                 startActivity(
                     Intent(this@MainActivity, RuleDetailActivity::class.java)
-                        .putExtra(RuleDetailActivity.EXTRA_IMAGE_RES, imageRes),
+                        .putExtra(RuleDetailActivity.EXTRA_IMAGE_RES, imageRes)
+                        .putExtra(RuleDetailActivity.EXTRA_TITLE_RES, titleRes)
+                        .putExtra(RuleDetailActivity.EXTRA_DESCRIPTION_RES, descriptionRes),
                 )
             }
         }
@@ -761,16 +784,46 @@ class MainActivity : Activity() {
         card.addView(image, LinearLayout.LayoutParams(dp(104), dp(72)).apply {
             rightMargin = dp(10)
         })
-        val text = TextView(this).apply {
-            setText(textRes)
+        val copy = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+        val title = TextView(this).apply {
+            setText(titleRes)
+            textSize = TEXT_LABEL
+            setTextColor(COLOR_TITLE)
+            typeface = Typeface.DEFAULT_BOLD
+            includeFontPadding = false
+        }
+        copy.addView(title)
+        val description = TextView(this).apply {
+            setText(descriptionRes)
             textSize = TEXT_LABEL
             setTextColor(COLOR_TEXT)
             includeFontPadding = false
+            setPadding(0, dp(4), 0, 0)
         }
-        card.addView(text, LinearLayout.LayoutParams(0, -2, 1f))
+        copy.addView(description)
+        card.addView(copy, LinearLayout.LayoutParams(0, -2, 1f))
         parent.addView(card, LinearLayout.LayoutParams(-1, -2).apply {
             bottomMargin = dp(8)
         })
+    }
+
+    private fun addRulesLink(parent: LinearLayout) {
+        val link = TextView(this).apply {
+            setText(R.string.rules_book_link)
+            textSize = TEXT_LABEL
+            setTextColor(COLOR_MESSAGE)
+            includeFontPadding = false
+            paintFlags = paintFlags or Paint.UNDERLINE_TEXT_FLAG
+            setPadding(dp(10), dp(4), dp(10), dp(16))
+            isClickable = true
+            isFocusable = true
+            setOnClickListener {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.rules_book_url))))
+            }
+        }
+        parent.addView(link)
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()

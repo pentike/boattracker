@@ -123,12 +123,45 @@ the language selector only displays the current language and if the user taps on
 
 # Racing rules
 
-add simple list for sailboat racing rules having an image and a description at the bottom of the main screen before the message list. The rulesa are:
-  1. port track must keep clear of starboard track
-  2. windward boat must keep clear of leeward boat
-  3. board overtaking must keep clear
-  4. rounding mark outside boats must give enough room to the inside boat
-  see https://dockstahavet.se/blog/basic-rules-of-sailing-racing for samples
+add simple list for sailboat racing rules having an image and a description at the bottom of the main screen before the message list.
+The rules are:
 
-if the user taps on a rule, open a new screen with the image for that specific rule. the
+
+## HU
+Néhány fontos szabály:
+### 10 ELLENTÉTES CSAPÁSON
+Amikor a hajók ellentétes csapáson vannak, a balcsapáson lévô
+hajónak kell a jobbcsapáson lévô hajó elôl kitérnie.
+### 11 AZONOS CSAPÁSON, FEDÉSBEN
+Amikor a hajók azonos csapáson és fedésben vannak, a szél felôli hajónak kell a szél alatti hajó elôl kitérnie.
+### 12 AZONOS CSAPÁSON, FEDÉS NÉLKÜL
+Amikor a hajók azonos csapáson vannak és nincsenek fedésben, a tisztán hátul lévô hajónak kell a tisztán elöl lévô elôl kitérnie.
+### 13 FORDULÁS ALATT
+Miután egy hajó túljut a szélben állás irányán, mindaddig, amíg
+élesen szélnek irányon nem lesz, ki kell térnie más hajók elôl. Ez
+idô alatt a 10., 11. és 12. szabály nem alkalmazható rá. Ha egy
+idôben két hajóra vonatkozik ez a szabály, annak a hajónak kell
+kitérnie, amelyik a másik bal oldalán vagy a másik mögött van
+
+## EN
+Some important rule:
+### 10 ON OPPOSITE TACKS
+When boats are on opposite tacks, a port-tack boat shall keep
+clear of a starboard-tack boat.
+### 11 ON THE SAME TACK, OVERLAPPED
+When boats are on the same tack and overlapped, a windward
+boat shall keep clear of a leeward boat.
+### 12 ON THE SAME TACK, NOT OVERLAPPED
+When boats are on the same tack and not overlapped, a boat
+clear astern shall keep clear of a boat clear ahead.
+### 13 WHILE TACKING
+After a boat passes head to wind, she shall keep clear of other
+boats until she is on a close-hauled course. During that time
+rules 10, 11 and 12 do not apply. If two boats are subject to this
+rule at the same time, the one on the other’s port side or the one
+
+Add an "MVSZ szabálykönyv 2. rész" link at the bottom of the rule list:
+https://cdn.hunsail.hu/uploads/2025/04/rrs_szabalykonyv_2025-2028_eng-hun_oldalpar_verzio.pdf
+
+if the user taps on a rule, open a new screen with the image and description for that specific rule. the
   screen can be closed with standard back movement or an x in the corner

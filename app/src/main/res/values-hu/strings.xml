@@ -21,10 +21,15 @@
     <string name="coordinates_degrees_format">%1$s°, %2$s°</string>
     <string name="tracking_notification_channel">Hajó követése</string>
     <string name="tracking_notification_text">Pozíció küldése</string>
-    <string name="racing_rules">Alapvető versenyszabályok</string>
-    <string name="rule_port_starboard">A balcsapáson haladó hajó kitér a jobbcsapáson haladónak.</string>
-    <string name="rule_windward_leeward">A szél felőli hajó kitér a szél alatti hajónak.</string>
-    <string name="rule_overtaking">Az előző hajó köteles kitérni.</string>
-    <string name="rule_mark_room">Pályajelnél a külső hajók elegendő helyet adnak a belső hajónak.</string>
-    <string name="tacking_before_other_not_allowed">Krajcolás közben másokat akadályozni tilos!</string>
+    <string name="racing_rules">Néhány fontos szabály</string>
+    <string name="rule_10_title">10 ELLENTÉTES CSAPÁSON</string>
+    <string name="rule_10_description">Amikor a hajók ellentétes csapáson vannak, a balcsapáson lévő hajónak kell a jobbcsapáson lévő hajó elől kitérnie.</string>
+    <string name="rule_11_title">11 AZONOS CSAPÁSON, FEDÉSBEN</string>
+    <string name="rule_11_description">Amikor a hajók azonos csapáson és fedésben vannak, a szél felőli hajónak kell a szél alatti hajó elől kitérnie.</string>
+    <string name="rule_12_title">12 AZONOS CSAPÁSON, FEDÉS NÉLKÜL</string>
+    <string name="rule_12_description">Amikor a hajók azonos csapáson vannak és nincsenek fedésben, a tisztán hátul lévő hajónak kell a tisztán elöl lévő elől kitérnie.</string>
+    <string name="rule_13_title">13 FORDULÁS ALATT</string>
+    <string name="rule_13_description">Miután egy hajó túljut a szélben állás irányán, mindaddig, amíg élesen szélnek irányon nem lesz, ki kell térnie más hajók elől. Ez idő alatt a 10., 11. és 12. szabály nem alkalmazható rá. Ha egy időben két hajóra vonatkozik ez a szabály, annak a hajónak kell kitérnie, amelyik a másik bal oldalán vagy a másik mögött van.</string>
+    <string name="rules_book_link">MVSZ szabálykönyv 2. rész</string>
+    <string name="rules_book_url">https://cdn.hunsail.hu/uploads/2025/04/rrs_szabalykonyv_2025-2028_eng-hun_oldalpar_verzio.pdf</string>
 </resources>
