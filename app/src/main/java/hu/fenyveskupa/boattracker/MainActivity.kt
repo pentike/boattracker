@@ -16,6 +16,7 @@ import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.text.InputType
 import android.text.format.DateFormat
 import android.view.Gravity
 import android.view.View
@@ -24,6 +25,7 @@ import android.view.animation.Animation
 import android.webkit.WebView
 import android.widget.Button
 import android.widget.CompoundButton
+import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -121,11 +123,51 @@ class MainActivity : Activity() {
     private fun handleIntent(intent: Intent) {
         val startupUrl = intent.getStringExtra("trackingUrl") ?: intent.dataString
         if (startupUrl.isNullOrBlank()) {
-            fetchStartupEvents()
+            handleDirectStartup()
             return
         }
         val config = parseTrackerConfig(startupUrl) ?: return
         initializeBackend(config)
+    }
+
+    private fun handleDirectStartup() {
+        val savedConfig = TrackerPrefs.savedConfig(this)
+        if (savedConfig == null) {
+            fetchStartupEvents()
+            return
+        }
+        showShipConfirmationDialog(savedConfig)
+    }
+
+    private fun showShipConfirmationDialog(config: TrackerConfig) {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.confirm_ship_title)
+            .setMessage(getString(R.string.confirm_ship_message, config.shipName))
+            .setPositiveButton(R.string.confirm_ship_approve) { _, _ ->
+                initializeBackend(config.copy(shipName = TrackerPrefs.ship(this)))
+            }
+            .setNegativeButton(R.string.confirm_ship_change) { _, _ ->
+                showShipNameDialog(config)
+            }
+            .show()
+    }
+
+    private fun showShipNameDialog(config: TrackerConfig) {
+        val input = EditText(this).apply {
+            setText(config.shipName.takeUnless { it == getString(R.string.unknown_value) }.orEmpty())
+            selectAll()
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS
+        }
+        AlertDialog.Builder(this)
+            .setTitle(R.string.change_ship_title)
+            .setView(input)
+            .setPositiveButton(R.string.save) { _, _ ->
+                val shipName = input.text.toString().trim().ifBlank { getString(R.string.unknown_value) }
+                TrackerPrefs.setShip(this, shipName)
+                initializeBackend(config.copy(shipName = shipName))
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     private fun fetchStartupEvents() {

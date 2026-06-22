@@ -59,8 +59,10 @@ it has a main screen displaying
 
 # Communication with the backend server
 
-Communication starts with sending a GET request to the url given at starup in the deeplink.
+Communication starts with sending a GET request to the url given at starup in the deeplink. The ship name should be stored in app local database.
+If the app is started directly, it must ask for the ship name whether it is still valid and allow the user to approve it or change it if necessary.
 If the app is started directly it must use the default configuration endpoint provided in the Startup section and use the configUrl for the chosen event, i.e.:
+```
 https://fenyveskupa.hu/api/pozicio/init
 response {
 	"logo":"https://fenyveskupa.hu/verseny/harmadik-keso-pal-fenyves-kupa/logo.png",
@@ -68,6 +70,7 @@ response {
 	"motto":"A szél legyen velünk"
 	"url":"https://fenyveskupa.hu/verseny/harmadik-keso-pal-fenyves-kupa/pozicio/hajok"
 }
+```
 
 Sending of the gps coordinates is started by POSTing to the url got from the initial response.
 request

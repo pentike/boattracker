@@ -83,12 +83,31 @@ object TrackerPrefs {
     fun enabled(context: Context): Boolean = prefs(context).getBoolean(KEY_ENABLED, true)
     fun language(context: Context): String = prefs(context).getString(KEY_LANGUAGE, "en") ?: "en"
 
+    fun savedConfig(context: Context): TrackerConfig? {
+        val initUrl = prefs(context).getString(KEY_INIT_URL, null)?.takeIf { it.isNotBlank() } ?: return null
+        val postUrl = prefs(context).getString(KEY_POST_URL, null)?.takeIf { it.isNotBlank() } ?: initUrl
+        return TrackerConfig(
+            initUrl = initUrl,
+            postUrl = postUrl,
+            domain = domain(context),
+            shipName = ship(context),
+            nevezesId = nevezesId(context),
+            logoUrl = logoUrl(context),
+            event = event(context),
+            motto = motto(context),
+        )
+    }
+
     fun setEnabled(context: Context, enabled: Boolean) {
         prefs(context).edit().putBoolean(KEY_ENABLED, enabled).apply()
     }
 
     fun setLanguage(context: Context, language: String) {
         prefs(context).edit().putString(KEY_LANGUAGE, language).apply()
+    }
+
+    fun setShip(context: Context, ship: String) {
+        prefs(context).edit().putString(KEY_SHIP, ship).apply()
     }
 
     fun localizedContext(context: Context): Context {
