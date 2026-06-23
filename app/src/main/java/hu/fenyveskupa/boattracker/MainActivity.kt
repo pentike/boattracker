@@ -805,7 +805,7 @@ class MainActivity : Activity() {
         val card = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            background = getDrawable(R.drawable.message_list_item_background)
+            background = getDrawable(R.drawable.rule_card_background)
             setPadding(dp(10), dp(8), dp(10), dp(8))
             isClickable = true
             isFocusable = true
