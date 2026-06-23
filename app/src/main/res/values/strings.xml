@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">Boat Tracker</string>
     <string name="dismiss">x</string>
-    <string name="broadcast_domain">Your data is sent to this server</string>
+    <string name="broadcast_domain">We send your data to the %1$s server.</string>
     <string name="ship">Ship</string>
     <string name="current_gps">Current GPS</string>
     <string name="last_broadcast">Last broadcast</string>

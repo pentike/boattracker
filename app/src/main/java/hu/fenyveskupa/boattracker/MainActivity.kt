@@ -8,11 +8,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.graphics.BitmapFactory
 import android.graphics.Paint
 import android.graphics.Typeface
-import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -22,7 +20,6 @@ import android.view.Gravity
 import android.view.View
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
-import android.webkit.WebView
 import android.widget.Button
 import android.widget.CompoundButton
 import android.widget.EditText
@@ -45,12 +42,12 @@ class MainActivity : Activity() {
         const val COLOR_MUTED = 0xFF4F635E.toInt()
         const val COLOR_MESSAGE = 0xFF003D33.toInt()
         const val COLOR_WARNING = 0xFF4B2A00.toInt()
-        const val COLOR_DOT = 0xFF00A878.toInt()
         const val TEXT_TITLE = 24f
         const val TEXT_EVENT = 20f
         const val TEXT_BODY = 19f
         const val TEXT_LABEL = 15f
         const val TEXT_VALUE = 24f
+        const val TEXT_SHIP = 31f
         const val TEXT_MESSAGE = 19f
         const val TEXT_SWITCH = 20f
     }
@@ -66,14 +63,13 @@ class MainActivity : Activity() {
     private lateinit var warningSection: TextView
     private lateinit var messageListTitle: TextView
     private lateinit var messageList: LinearLayout
-    private lateinit var sendingDot: View
+    private lateinit var uploadStatusIcon: View
     private lateinit var broadcastSwitch: Switch
-    private lateinit var backgroundLogo: ImageView
-    private lateinit var defaultLogo: WebView
+    private lateinit var headerLogo: ImageView
     private var suppressSwitchCallback = false
     private var remoteLogoLoadAttempted = false
-    private val sendingDotAnimation = AlphaAnimation(1f, 0.25f).apply {
-        duration = 650L
+    private val uploadStatusAnimation = AlphaAnimation(1f, 0.25f).apply {
+        duration = 1650L
         repeatMode = Animation.REVERSE
         repeatCount = Animation.INFINITE
     }
@@ -393,22 +389,6 @@ class MainActivity : Activity() {
         val root = FrameLayout(this).apply {
             setBackgroundColor(COLOR_BACKGROUND)
         }
-        defaultLogo = WebView(this).apply {
-            setBackgroundColor(Color.TRANSPARENT)
-            alpha = 0.18f
-            isVerticalScrollBarEnabled = false
-            isHorizontalScrollBarEnabled = false
-            loadUrl("file:///android_asset/fenyvesvit_logo.svg")
-        }
-        root.addView(defaultLogo, FrameLayout.LayoutParams(-1, -1))
-
-        backgroundLogo = ImageView(this).apply {
-            visibility = View.GONE
-            alpha = 0.18f
-            scaleType = ImageView.ScaleType.CENTER_CROP
-        }
-        root.addView(backgroundLogo, FrameLayout.LayoutParams(-1, -1))
-
         val scroll = ScrollView(this)
         val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -417,32 +397,7 @@ class MainActivity : Activity() {
         scroll.addView(content)
         root.addView(scroll, FrameLayout.LayoutParams(-1, -1))
 
-        val title = TextView(this).apply {
-            setText(R.string.app_name)
-            textSize = TEXT_TITLE
-            setTextColor(COLOR_TITLE)
-            gravity = Gravity.CENTER_HORIZONTAL
-            includeFontPadding = false
-        }
-        content.addView(title, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(10) })
-
-        eventValue = TextView(this).apply {
-            textSize = TEXT_EVENT
-            setTextColor(COLOR_TITLE)
-            gravity = Gravity.CENTER_HORIZONTAL
-            includeFontPadding = false
-            visibility = View.GONE
-        }
-        content.addView(eventValue, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(6) })
-
-        mottoValue = TextView(this).apply {
-            textSize = TEXT_BODY
-            setTextColor(COLOR_MUTED)
-            gravity = Gravity.CENTER_HORIZONTAL
-            includeFontPadding = false
-            visibility = View.GONE
-        }
-        content.addView(mottoValue, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(12) })
+        addHeader(content)
 
         messageSection = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -492,7 +447,7 @@ class MainActivity : Activity() {
 
         shipValue = TextView(this).apply {
             setText(R.string.unknown_value)
-            textSize = TEXT_VALUE
+            textSize = TEXT_SHIP
             setTextColor(COLOR_TEXT)
             typeface = Typeface.DEFAULT_BOLD
             includeFontPadding = false
@@ -536,8 +491,7 @@ class MainActivity : Activity() {
         switchRow.addView(broadcastSwitch)
         content.addView(switchRow, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(16) })
 
-        addLanguageSelector(content)
-        domainValue = addInfoRow(content, R.string.broadcast_domain, showSendingDot = true)
+        domainValue = addInfoRow(content, R.string.broadcast_domain, showSendingDot = true, showValue = false)
 
         addRulesSection(content)
 
@@ -560,10 +514,70 @@ class MainActivity : Activity() {
         setContentView(root)
     }
 
+    private fun addHeader(parent: LinearLayout) {
+        val header = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+
+        val appRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+        val appName = TextView(this).apply {
+            setText(R.string.app_name)
+            textSize = TEXT_TITLE
+            setTextColor(COLOR_TITLE)
+            gravity = Gravity.START
+            includeFontPadding = false
+        }
+        appRow.addView(appName, LinearLayout.LayoutParams(0, -2, 1f))
+        appRow.addView(languageButton(), LinearLayout.LayoutParams(dp(48), dp(48)))
+        header.addView(appRow, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(8) })
+
+        val titleRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+        headerLogo = ImageView(this).apply {
+            setImageResource(R.drawable.ic_launcher)
+            scaleType = ImageView.ScaleType.FIT_CENTER
+        }
+        titleRow.addView(headerLogo, LinearLayout.LayoutParams(dp(72), dp(72)).apply {
+            rightMargin = dp(12)
+        })
+
+        val titleBlock = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+        eventValue = TextView(this).apply {
+            textSize = TEXT_EVENT
+            setTextColor(COLOR_TITLE)
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.START
+            includeFontPadding = false
+            visibility = View.GONE
+        }
+        titleBlock.addView(eventValue, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(4) })
+
+        mottoValue = TextView(this).apply {
+            textSize = TEXT_BODY
+            setTextColor(COLOR_MUTED)
+            gravity = Gravity.START
+            includeFontPadding = false
+            visibility = View.GONE
+        }
+        titleBlock.addView(mottoValue, LinearLayout.LayoutParams(-1, -2))
+        titleRow.addView(titleBlock, LinearLayout.LayoutParams(0, -2, 1f))
+        header.addView(titleRow, LinearLayout.LayoutParams(-1, -2))
+        parent.addView(header, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(14) })
+    }
+
     private fun addInfoRow(
         parent: LinearLayout,
         labelRes: Int,
         showSendingDot: Boolean = false,
+        showValue: Boolean = true,
     ): TextView {
         val labelView = TextView(this).apply {
             setText(labelRes)
@@ -576,19 +590,20 @@ class MainActivity : Activity() {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_VERTICAL
             }
-            sendingDot = View(this).apply {
-                background = GradientDrawable().apply {
-                    shape = GradientDrawable.OVAL
-                    setColor(COLOR_DOT)
-                }
+            uploadStatusIcon = ImageView(this).apply {
+                setImageResource(R.drawable.ic_cloud_upload)
+                alpha = 0.95f
             }
-            labelRow.addView(sendingDot, LinearLayout.LayoutParams(dp(12), dp(12)).apply {
+            labelRow.addView(uploadStatusIcon, LinearLayout.LayoutParams(dp(24), dp(24)).apply {
                 rightMargin = dp(8)
             })
             labelRow.addView(labelView)
             parent.addView(labelRow)
         } else {
             parent.addView(labelView)
+        }
+        if (!showValue) {
+            return labelView
         }
         val valueView = TextView(this).apply {
             setText(R.string.unknown_value)
@@ -601,38 +616,25 @@ class MainActivity : Activity() {
         return valueView
     }
 
-    private fun addLanguageSelector(parent: LinearLayout) {
-        val row = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(0, 0, 0, dp(14))
-        }
-        val label = TextView(this).apply {
-            setText(R.string.language)
-            textSize = TEXT_LABEL
-            setTextColor(COLOR_MUTED)
-            includeFontPadding = false
-        }
-        row.addView(label, LinearLayout.LayoutParams(0, -2, 1f))
-        row.addView(languageButton(), LinearLayout.LayoutParams(-2, dp(40)))
-        parent.addView(row)
-    }
-
-    private fun languageButton(): Button {
-        return Button(this).apply {
-            text = currentLanguageLabel()
-            textSize = TEXT_LABEL
+    private fun languageButton(): TextView {
+        return TextView(this).apply {
+            text = currentLanguageFlag()
+            textSize = 24f
             setTextColor(COLOR_TITLE)
+            gravity = Gravity.CENTER
             includeFontPadding = false
-            isAllCaps = false
+            setPadding(0, 0, 0, 0)
+            contentDescription = getString(R.string.language)
+            isClickable = true
+            isFocusable = true
             setOnClickListener { showLanguageDialog() }
         }
     }
 
-    private fun currentLanguageLabel(): String {
+    private fun currentLanguageFlag(): String {
         return when (TrackerPrefs.language(this)) {
-            "hu" -> getString(R.string.language_hungarian)
-            else -> getString(R.string.language_english)
+            "hu" -> "🇭🇺"
+            else -> "🇬🇧"
         }
     }
 
@@ -683,7 +685,7 @@ class MainActivity : Activity() {
     }
 
     private fun renderState() {
-        domainValue.text = TrackerPrefs.domain(this)
+        domainValue.text = getString(R.string.broadcast_domain, TrackerPrefs.domain(this))
         val event = TrackerPrefs.event(this)
         eventValue.text = event
         eventValue.visibility = if (event.isBlank()) View.GONE else View.VISIBLE
@@ -708,15 +710,14 @@ class MainActivity : Activity() {
         renderMessageList()
         val enabled = TrackerPrefs.enabled(this)
         warningSection.visibility = if (enabled) View.GONE else View.VISIBLE
-        val communicationOk = msg != getString(R.string.communication_error)
-        if (enabled && communicationOk) {
-            sendingDot.visibility = View.VISIBLE
-            if (sendingDot.animation == null) {
-                sendingDot.startAnimation(sendingDotAnimation)
+        if (enabled) {
+            uploadStatusIcon.visibility = View.VISIBLE
+            if (uploadStatusIcon.animation == null) {
+                uploadStatusIcon.startAnimation(uploadStatusAnimation)
             }
         } else {
-            sendingDot.clearAnimation()
-            sendingDot.visibility = View.GONE
+            uploadStatusIcon.clearAnimation()
+            uploadStatusIcon.visibility = View.GONE
         }
         suppressSwitchCallback = true
         broadcastSwitch.isChecked = enabled
@@ -734,9 +735,7 @@ class MainActivity : Activity() {
                     val bitmap = BitmapFactory.decodeStream(input)
                     if (bitmap != null) {
                         runOnUiThread {
-                            defaultLogo.visibility = View.GONE
-                            backgroundLogo.setImageBitmap(bitmap)
-                            backgroundLogo.visibility = View.VISIBLE
+                            headerLogo.setImageBitmap(bitmap)
                         }
                     }
                 }

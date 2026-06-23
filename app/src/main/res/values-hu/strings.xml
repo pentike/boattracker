@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">Boat Tracker</string>
     <string name="dismiss">x</string>
-    <string name="broadcast_domain">Az adatok erre a szerverre kerülnek</string>
+    <string name="broadcast_domain">Az adatokat a %1$s szerverre küldjük.</string>
     <string name="ship">Hajó</string>
     <string name="current_gps">Aktuális GPS</string>
     <string name="last_broadcast">Utolsó küldés</string>
@@ -27,7 +27,7 @@
     <string name="coordinates_degrees_format">%1$s°, %2$s°</string>
     <string name="tracking_notification_channel">Hajó követése</string>
     <string name="tracking_notification_text">Pozíció küldése</string>
-    <string name="racing_rules">Néhány fontos szabály</string>
+    <string name="racing_rules">Fontos szabályok</string>
     <string name="rule_10_title">10 ELLENTÉTES CSAPÁSON</string>
     <string name="rule_10_description">Amikor a hajók ellentétes csapáson vannak, a balcsapáson lévő hajónak kell a jobbcsapáson lévő hajó elől kitérnie.</string>
     <string name="rule_11_title">11 AZONOS CSAPÁSON, FEDÉSBEN</string>
