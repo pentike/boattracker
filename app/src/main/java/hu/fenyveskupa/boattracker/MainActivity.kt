@@ -11,10 +11,12 @@ import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
 import android.graphics.Typeface
+import android.graphics.PorterDuff
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -600,6 +602,7 @@ class MainActivity : Activity() {
             scaleY = 1.35f
             thumbTintList = switchThumbColors()
             trackTintList = switchTrackColors()
+            trackDrawable?.setColorFilter(COLOR_GOLD, PorterDuff.Mode.SRC_IN)
             setOnCheckedChangeListener { _: CompoundButton, isChecked: Boolean ->
                 if (suppressSwitchCallback) return@setOnCheckedChangeListener
                 TrackerPrefs.setEnabled(this@MainActivity, isChecked)
@@ -633,7 +636,7 @@ class MainActivity : Activity() {
     private fun switchThumbColors(): ColorStateList {
         return ColorStateList(
             arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf()),
-            intArrayOf(0xFFFFFFFF.toInt(), 0xFFFFFFFF.toInt()),
+            intArrayOf(Color.WHITE, Color.WHITE),
         )
     }
 
