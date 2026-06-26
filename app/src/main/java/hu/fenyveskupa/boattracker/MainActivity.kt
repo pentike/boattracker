@@ -8,18 +8,21 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.RectF
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.text.InputType
-import android.text.format.DateFormat
+import android.text.TextUtils
 import android.view.Gravity
 import android.view.View
-import android.view.animation.AlphaAnimation
-import android.view.animation.Animation
+import android.view.WindowInsetsController
 import android.widget.Button
 import android.widget.CompoundButton
 import android.widget.EditText
@@ -31,14 +34,18 @@ import android.widget.Switch
 import android.widget.TextView
 import java.net.HttpURLConnection
 import java.net.URL
-import java.util.Date
 import kotlin.concurrent.thread
 
 class MainActivity : Activity() {
     private companion object {
-        const val COLOR_BACKGROUND = 0xFFFFF9E8.toInt()
+        const val HEADER_PHOTO_URL = "https://fenyvesvit.hu/sites/fenyvesvit.hu/themes/adt_higherground/images/header-photo.jpg"
+        const val COLOR_BACKGROUND = 0xFFFAFBFD.toInt()
         const val COLOR_TEXT = 0xFF001F1C.toInt()
         const val COLOR_TITLE = 0xFF002F2A.toInt()
+        const val COLOR_NAVY = 0xFF071F49.toInt()
+        const val COLOR_NAVY_DARK = 0xFF031633.toInt()
+        const val COLOR_GOLD = 0xFFF8C316.toInt()
+        const val COLOR_HEADER_TEXT = 0xFFFFFFFF.toInt()
         const val COLOR_MUTED = 0xFF4F635E.toInt()
         const val COLOR_MESSAGE = 0xFF003D33.toInt()
         const val COLOR_WARNING = 0xFF4B2A00.toInt()
@@ -46,33 +53,24 @@ class MainActivity : Activity() {
         const val TEXT_EVENT = 20f
         const val TEXT_BODY = 19f
         const val TEXT_LABEL = 15f
-        const val TEXT_VALUE = 24f
-        const val TEXT_SHIP = 31f
+        const val TEXT_VALUE = 23f
+        const val TEXT_SHIP = 29f
         const val TEXT_MESSAGE = 19f
-        const val TEXT_SWITCH = 20f
     }
 
-    private lateinit var domainValue: TextView
     private lateinit var eventValue: TextView
     private lateinit var mottoValue: TextView
     private lateinit var shipValue: TextView
     private lateinit var coordinatesValue: TextView
-    private lateinit var lastBroadcastValue: TextView
     private lateinit var messageSection: LinearLayout
     private lateinit var messageValue: TextView
     private lateinit var warningSection: TextView
     private lateinit var messageListTitle: TextView
     private lateinit var messageList: LinearLayout
-    private lateinit var uploadStatusIcon: View
+    private lateinit var radioTowerView: RadioTowerView
     private lateinit var broadcastSwitch: Switch
-    private lateinit var headerLogo: ImageView
+    private lateinit var headerPhoto: ImageView
     private var suppressSwitchCallback = false
-    private var remoteLogoLoadAttempted = false
-    private val uploadStatusAnimation = AlphaAnimation(1f, 0.25f).apply {
-        duration = 1650L
-        repeatMode = Animation.REVERSE
-        repeatCount = Animation.INFINITE
-    }
 
     private val stateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -197,10 +195,6 @@ class MainActivity : Activity() {
             try {
                 val initializedConfig = fetchInitConfig(config)
                 TrackerPrefs.saveConfig(this, initializedConfig)
-                if (!remoteLogoLoadAttempted) {
-                    remoteLogoLoadAttempted = true
-                    loadRemoteLogo(initializedConfig.logoUrl)
-                }
                 runOnUiThread {
                     renderState()
                     if (hasLocationPermission()) {
@@ -266,6 +260,19 @@ class MainActivity : Activity() {
         startService(Intent(this, TrackerService::class.java).setAction(TrackerIntents.ACTION_STOP))
     }
 
+    private fun configureSystemBars() {
+        window.statusBarColor = COLOR_NAVY_DARK
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.decorView.post {
+                window.insetsController?.setSystemBarsAppearance(0, WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS)
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            window.decorView.systemUiVisibility =
+                window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+        }
+    }
+
     private fun hasLocationPermission(): Boolean {
         return checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
             checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
@@ -313,6 +320,7 @@ class MainActivity : Activity() {
         }
         content.addView(text)
         setContentView(root)
+        configureSystemBars()
     }
 
     private fun showEventList(events: List<StartupEvent>) {
@@ -372,6 +380,7 @@ class MainActivity : Activity() {
             content.addView(item, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(10) })
         }
         setContentView(root)
+        configureSystemBars()
     }
 
     private fun addStartupLogo(parent: LinearLayout, bottomMargin: Int) {
@@ -392,12 +401,19 @@ class MainActivity : Activity() {
         val scroll = ScrollView(this)
         val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(16), dp(16), dp(16))
         }
         scroll.addView(content)
         root.addView(scroll, FrameLayout.LayoutParams(-1, -1))
 
-        addHeader(content)
+        addSampleHeader(content)
+
+        val body = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(16), dp(16), dp(16))
+        }
+        content.addView(body)
+
+        addBoatStatusCard(body)
 
         messageSection = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -432,7 +448,7 @@ class MainActivity : Activity() {
             leftMargin = dp(8)
         })
         messageSection.addView(messageRow)
-        content.addView(messageSection, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(12) })
+        body.addView(messageSection, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(12) })
 
         warningSection = TextView(this).apply {
             setText(R.string.broadcast_off_warning)
@@ -443,39 +459,147 @@ class MainActivity : Activity() {
             setPadding(dp(12), dp(12), dp(12), dp(12))
             visibility = View.GONE
         }
-        content.addView(warningSection, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(12) })
+        body.addView(warningSection, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(12) })
 
+        addRulesSection(body)
+
+        messageListTitle = TextView(this).apply {
+            setText(R.string.messages)
+            textSize = TEXT_LABEL
+            setTextColor(COLOR_MUTED)
+            includeFontPadding = false
+            setPadding(0, dp(18), 0, dp(8))
+            visibility = View.GONE
+        }
+        body.addView(messageListTitle)
+
+        messageList = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            visibility = View.GONE
+        }
+        body.addView(messageList)
+
+        setContentView(root)
+        configureSystemBars()
+    }
+
+    private fun addSampleHeader(parent: LinearLayout) {
+        val header = FrameLayout(this).apply {
+            setBackgroundColor(COLOR_NAVY_DARK)
+        }
+        headerPhoto = ImageView(this).apply {
+            setImageResource(R.drawable.rule_port_starboard)
+            scaleType = ImageView.ScaleType.CENTER_CROP
+            contentDescription = getString(R.string.header_photo)
+        }
+        header.addView(headerPhoto, FrameLayout.LayoutParams(dp(226), -1, Gravity.END))
+        header.addView(HeaderOverlayView(this), FrameLayout.LayoutParams(-1, -1))
+
+        val copy = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(28), dp(16), dp(18), dp(18))
+        }
+        eventValue = TextView(this).apply {
+            textSize = 29f
+            setTextColor(COLOR_HEADER_TEXT)
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER_HORIZONTAL
+            includeFontPadding = false
+            maxLines = 3
+            setLineSpacing(dp(4).toFloat(), 1f)
+            visibility = View.GONE
+        }
+        copy.addView(eventValue, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(12) })
+
+        mottoValue = TextView(this).apply {
+            textSize = 18f
+            setTextColor(COLOR_HEADER_TEXT)
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.ITALIC)
+            gravity = Gravity.CENTER_HORIZONTAL
+            includeFontPadding = false
+            maxLines = 2
+            setLineSpacing(dp(3).toFloat(), 1f)
+            visibility = View.GONE
+        }
+        copy.addView(mottoValue, LinearLayout.LayoutParams(-1, -2))
+        header.addView(copy, FrameLayout.LayoutParams(dp(248), -1, Gravity.START))
+
+        header.addView(languageButton(COLOR_HEADER_TEXT), FrameLayout.LayoutParams(dp(48), dp(48), Gravity.TOP or Gravity.END).apply {
+            topMargin = dp(8)
+            rightMargin = dp(8)
+        })
+        parent.addView(header, LinearLayout.LayoutParams(-1, dp(188)))
+        loadHeaderPhoto()
+    }
+
+    private fun addBoatStatusCard(parent: LinearLayout) {
+        val card = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            background = getDrawable(R.drawable.boat_status_card_background)
+            setPadding(dp(18), dp(14), dp(18), dp(14))
+        }
+
+        val info = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+        info.addView(statusLabel(R.string.ship))
         shipValue = TextView(this).apply {
             setText(R.string.unknown_value)
             textSize = TEXT_SHIP
-            setTextColor(COLOR_TEXT)
+            setTextColor(COLOR_NAVY)
             typeface = Typeface.DEFAULT_BOLD
             includeFontPadding = false
-            setPadding(0, dp(4), 0, dp(12))
+            maxLines = 2
+            ellipsize = TextUtils.TruncateAt.END
         }
-        content.addView(shipValue)
+        info.addView(shipValue, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(10) })
 
-        val positionRow = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(0, 0, 0, dp(14))
-        }
-        coordinatesValue = addIconValue(positionRow, R.drawable.ic_location, weight = 1f)
-        lastBroadcastValue = addIconValue(positionRow, R.drawable.ic_clock)
-        content.addView(positionRow)
+        info.addView(View(this).apply {
+            setBackgroundColor(0xFFD3D8E2.toInt())
+        }, LinearLayout.LayoutParams(-1, dp(1)).apply { bottomMargin = dp(10) })
 
-        val switchRow = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(0, dp(4), 0, 0)
+        info.addView(statusLabel(R.string.current_gps))
+        coordinatesValue = TextView(this).apply {
+            setText(R.string.unknown_value)
+            textSize = TEXT_VALUE
+            setTextColor(COLOR_NAVY)
+            typeface = Typeface.DEFAULT_BOLD
+            includeFontPadding = false
+            maxLines = 2
         }
+        info.addView(coordinatesValue)
+        card.addView(info, LinearLayout.LayoutParams(0, -2, 1f).apply { rightMargin = dp(14) })
+
+        val transmission = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_HORIZONTAL
+            background = getDrawable(R.drawable.transmission_panel_background)
+            setPadding(dp(8), dp(18), dp(8), dp(18))
+        }
+        radioTowerView = RadioTowerView(this)
+        transmission.addView(radioTowerView, LinearLayout.LayoutParams(dp(56), dp(56)).apply {
+            bottomMargin = dp(16)
+            gravity = Gravity.CENTER_HORIZONTAL
+        })
         val switchLabel = TextView(this).apply {
             setText(R.string.broadcast_position)
-            textSize = TEXT_SWITCH
-            setTextColor(COLOR_TITLE)
+            textSize = TEXT_LABEL
+            setTextColor(COLOR_NAVY)
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
             includeFontPadding = false
+            maxLines = 2
         }
+        transmission.addView(switchLabel, LinearLayout.LayoutParams(-1, -2).apply {
+            bottomMargin = dp(18)
+        })
         broadcastSwitch = Switch(this).apply {
+            scaleX = 1.35f
+            scaleY = 1.35f
+            thumbTintList = switchThumbColors()
+            trackTintList = switchTrackColors()
             setOnCheckedChangeListener { _: CompoundButton, isChecked: Boolean ->
                 if (suppressSwitchCallback) return@setOnCheckedChangeListener
                 TrackerPrefs.setEnabled(this@MainActivity, isChecked)
@@ -487,140 +611,44 @@ class MainActivity : Activity() {
                 renderState()
             }
         }
-        switchRow.addView(switchLabel, LinearLayout.LayoutParams(0, -2, 1f))
-        switchRow.addView(broadcastSwitch)
-        content.addView(switchRow, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(16) })
-
-        domainValue = addInfoRow(content, R.string.broadcast_domain, showSendingDot = true, showValue = false)
-
-        addRulesSection(content)
-
-        messageListTitle = TextView(this).apply {
-            setText(R.string.messages)
-            textSize = TEXT_LABEL
-            setTextColor(COLOR_MUTED)
-            includeFontPadding = false
-            setPadding(0, dp(18), 0, dp(8))
-            visibility = View.GONE
-        }
-        content.addView(messageListTitle)
-
-        messageList = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            visibility = View.GONE
-        }
-        content.addView(messageList)
-
-        setContentView(root)
-    }
-
-    private fun addHeader(parent: LinearLayout) {
-        val header = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-        }
-
-        val appRow = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-        }
-        val appName = TextView(this).apply {
-            setText(R.string.app_name)
-            textSize = TEXT_TITLE
-            setTextColor(COLOR_TITLE)
-            gravity = Gravity.START
-            includeFontPadding = false
-        }
-        appRow.addView(appName, LinearLayout.LayoutParams(0, -2, 1f))
-        appRow.addView(languageButton(), LinearLayout.LayoutParams(dp(48), dp(48)))
-        header.addView(appRow, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(8) })
-
-        val titleRow = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-        }
-        headerLogo = ImageView(this).apply {
-            setImageResource(R.drawable.ic_launcher)
-            scaleType = ImageView.ScaleType.FIT_CENTER
-        }
-        titleRow.addView(headerLogo, LinearLayout.LayoutParams(dp(72), dp(72)).apply {
-            rightMargin = dp(12)
+        transmission.addView(broadcastSwitch, LinearLayout.LayoutParams(-2, -2).apply {
+            gravity = Gravity.CENTER_HORIZONTAL
         })
+        card.addView(transmission, LinearLayout.LayoutParams(dp(132), -1))
 
-        val titleBlock = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER_VERTICAL
-        }
-        eventValue = TextView(this).apply {
-            textSize = TEXT_EVENT
-            setTextColor(COLOR_TITLE)
-            typeface = Typeface.DEFAULT_BOLD
-            gravity = Gravity.START
-            includeFontPadding = false
-            visibility = View.GONE
-        }
-        titleBlock.addView(eventValue, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(4) })
-
-        mottoValue = TextView(this).apply {
-            textSize = TEXT_BODY
-            setTextColor(COLOR_MUTED)
-            gravity = Gravity.START
-            includeFontPadding = false
-            visibility = View.GONE
-        }
-        titleBlock.addView(mottoValue, LinearLayout.LayoutParams(-1, -2))
-        titleRow.addView(titleBlock, LinearLayout.LayoutParams(0, -2, 1f))
-        header.addView(titleRow, LinearLayout.LayoutParams(-1, -2))
-        parent.addView(header, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(14) })
+        parent.addView(card, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(16) })
     }
 
-    private fun addInfoRow(
-        parent: LinearLayout,
-        labelRes: Int,
-        showSendingDot: Boolean = false,
-        showValue: Boolean = true,
-    ): TextView {
-        val labelView = TextView(this).apply {
-            setText(labelRes)
+    private fun statusLabel(labelRes: Int): TextView {
+        return TextView(this).apply {
+            text = getString(labelRes).uppercase()
             textSize = TEXT_LABEL
-            setTextColor(COLOR_MUTED)
+            setTextColor(0xFF6D727C.toInt())
+            typeface = Typeface.DEFAULT_BOLD
             includeFontPadding = false
+            letterSpacing = 0.02f
         }
-        if (showSendingDot) {
-            val labelRow = LinearLayout(this).apply {
-                orientation = LinearLayout.HORIZONTAL
-                gravity = Gravity.CENTER_VERTICAL
-            }
-            uploadStatusIcon = ImageView(this).apply {
-                setImageResource(R.drawable.ic_cloud_upload)
-                alpha = 0.95f
-            }
-            labelRow.addView(uploadStatusIcon, LinearLayout.LayoutParams(dp(24), dp(24)).apply {
-                rightMargin = dp(8)
-            })
-            labelRow.addView(labelView)
-            parent.addView(labelRow)
-        } else {
-            parent.addView(labelView)
-        }
-        if (!showValue) {
-            return labelView
-        }
-        val valueView = TextView(this).apply {
-            setText(R.string.unknown_value)
-            textSize = TEXT_VALUE
-            setTextColor(COLOR_TEXT)
-            includeFontPadding = false
-            setPadding(0, dp(4), 0, dp(14))
-        }
-        parent.addView(valueView)
-        return valueView
     }
 
-    private fun languageButton(): TextView {
+    private fun switchThumbColors(): ColorStateList {
+        return ColorStateList(
+            arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf()),
+            intArrayOf(0xFFFFFFFF.toInt(), 0xFFFFFFFF.toInt()),
+        )
+    }
+
+    private fun switchTrackColors(): ColorStateList {
+        return ColorStateList(
+            arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf()),
+            intArrayOf(COLOR_GOLD, COLOR_GOLD),
+        )
+    }
+
+    private fun languageButton(textColor: Int = COLOR_TITLE): TextView {
         return TextView(this).apply {
             text = currentLanguageFlag()
             textSize = 24f
-            setTextColor(COLOR_TITLE)
+            setTextColor(textColor)
             gravity = Gravity.CENTER
             includeFontPadding = false
             setPadding(0, 0, 0, 0)
@@ -655,92 +683,48 @@ class MainActivity : Activity() {
             .show()
     }
 
-    private fun addIconValue(parent: LinearLayout, iconRes: Int, weight: Float = 0f): TextView {
-        val row = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-        }
-        val icon = ImageView(this).apply {
-            setImageResource(iconRes)
-            alpha = 0.95f
-        }
-        row.addView(icon, LinearLayout.LayoutParams(dp(22), dp(22)).apply {
-            rightMargin = dp(6)
-        })
-        val value = TextView(this).apply {
-            setText(R.string.unknown_value)
-            textSize = TEXT_BODY
-            setTextColor(COLOR_TEXT)
-            typeface = Typeface.DEFAULT_BOLD
-            includeFontPadding = false
-        }
-        row.addView(value)
-        val params = if (weight > 0f) {
-            LinearLayout.LayoutParams(0, -2, weight)
-        } else {
-            LinearLayout.LayoutParams(-2, -2)
-        }
-        parent.addView(row, params)
-        return value
-    }
-
     private fun renderState() {
-        domainValue.text = getString(R.string.broadcast_domain, TrackerPrefs.domain(this))
         val event = TrackerPrefs.event(this)
         eventValue.text = event
         eventValue.visibility = if (event.isBlank()) View.GONE else View.VISIBLE
         val motto = TrackerPrefs.motto(this)
         mottoValue.text = motto
         mottoValue.visibility = if (motto.isBlank()) View.GONE else View.VISIBLE
-        shipValue.text = TrackerPrefs.ship(this)
+        shipValue.text = TrackerPrefs.ship(this).uppercase()
         coordinatesValue.text = getString(
             R.string.coordinates_degrees_format,
             TrackerPrefs.latitude(this),
             TrackerPrefs.longitude(this),
         )
-        val last = TrackerPrefs.lastBroadcast(this)
-        lastBroadcastValue.text = if (last == 0L) {
-            getString(R.string.unknown_value)
-        } else {
-            DateFormat.getTimeFormat(this).format(Date(last))
-        }
         val msg = TrackerPrefs.message(this)
         messageSection.visibility = if (msg.isBlank()) View.GONE else View.VISIBLE
         messageValue.text = msg
         renderMessageList()
         val enabled = TrackerPrefs.enabled(this)
         warningSection.visibility = if (enabled) View.GONE else View.VISIBLE
-        if (enabled) {
-            uploadStatusIcon.visibility = View.VISIBLE
-            if (uploadStatusIcon.animation == null) {
-                uploadStatusIcon.startAnimation(uploadStatusAnimation)
-            }
-        } else {
-            uploadStatusIcon.clearAnimation()
-            uploadStatusIcon.visibility = View.GONE
-        }
+        radioTowerView.setBroadcasting(enabled)
         suppressSwitchCallback = true
         broadcastSwitch.isChecked = enabled
         suppressSwitchCallback = false
     }
 
-    private fun loadRemoteLogo(logoUrl: String) {
-        if (logoUrl.isBlank()) return
+    private fun loadHeaderPhoto() {
         thread {
             try {
-                val connection = URL(logoUrl).openConnection() as HttpURLConnection
+                val connection = URL(HEADER_PHOTO_URL).openConnection() as HttpURLConnection
                 connection.connectTimeout = 3000
                 connection.readTimeout = 3000
                 connection.inputStream.use { input ->
                     val bitmap = BitmapFactory.decodeStream(input)
                     if (bitmap != null) {
                         runOnUiThread {
-                            headerLogo.setImageBitmap(bitmap)
+                            headerPhoto.setImageBitmap(bitmap)
                         }
                     }
                 }
+                connection.disconnect()
             } catch (_: Exception) {
-                // The built-in logo remains visible when the remote logo is unavailable.
+                // The bundled fallback remains visible when the remote photo is unavailable.
             }
         }
     }
@@ -868,4 +852,136 @@ class MainActivity : Activity() {
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
+
+    private class HeaderOverlayView(context: Context) : View(context) {
+        private val shape = Path()
+        private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+        override fun onDraw(canvas: Canvas) {
+            super.onDraw(canvas)
+            val w = width.toFloat()
+            val h = height.toFloat()
+
+            paint.color = COLOR_BACKGROUND
+            shape.reset()
+            shape.moveTo(0f, h - 26f)
+            shape.cubicTo(w * 0.28f, h - 9f, w * 0.68f, h - 8f, w, h - 23f)
+            shape.lineTo(w, h)
+            shape.lineTo(0f, h)
+            shape.close()
+            canvas.drawPath(shape, paint)
+
+            paint.color = COLOR_NAVY_DARK
+            shape.reset()
+            shape.moveTo(0f, 0f)
+            shape.lineTo(w * 0.66f, 0f)
+            shape.lineTo(w * 0.505f, h - 26f)
+            shape.lineTo(0f, h - 44f)
+            shape.close()
+            canvas.drawPath(shape, paint)
+
+            paint.color = COLOR_GOLD
+            shape.reset()
+            shape.moveTo(0f, h - 40f)
+            shape.cubicTo(w * 0.28f, h - 23f, w * 0.68f, h - 22f, w, h - 36f)
+            shape.lineTo(w, h - 28f)
+            shape.cubicTo(w * 0.68f, h - 14f, w * 0.28f, h - 15f, 0f, h - 32f)
+            shape.close()
+            canvas.drawPath(shape, paint)
+        }
+    }
+
+    private class RadioTowerView(context: Context) : View(context) {
+        private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = COLOR_NAVY
+            strokeWidth = 2.8f * resources.displayMetrics.density
+            strokeCap = Paint.Cap.ROUND
+            strokeJoin = Paint.Join.ROUND
+            style = Paint.Style.STROKE
+        }
+        private val waveBounds = RectF()
+        private var broadcasting = false
+        private var phase = 0f
+
+        fun setBroadcasting(enabled: Boolean) {
+            val changed = broadcasting != enabled
+            broadcasting = enabled
+            if (changed) {
+                phase = 0f
+            }
+            alpha = if (enabled) 1f else 0.48f
+            if (enabled) {
+                postInvalidateOnAnimation()
+            } else {
+                invalidate()
+            }
+        }
+
+        override fun onDraw(canvas: Canvas) {
+            super.onDraw(canvas)
+            val scale = minOf(width / 48f, height / 48f)
+            canvas.save()
+            canvas.translate((width - 48f * scale) / 2f, (height - 48f * scale) / 2f)
+            canvas.scale(scale, scale)
+            paint.strokeWidth = 2.8f
+            paint.alpha = 255
+            paint.style = Paint.Style.STROKE
+
+            drawLine(canvas, 24f, 18f, 13f, 42f)
+            drawLine(canvas, 24f, 18f, 35f, 42f)
+            drawLine(canvas, 17f, 33f, 31f, 33f)
+            drawLine(canvas, 20f, 27f, 28f, 27f)
+            drawLine(canvas, 15f, 42f, 33f, 42f)
+            canvas.drawCircle(24f, 18f, 4f, paint)
+
+            drawWave(canvas, left = true, inner = true, alpha = waveAlpha(0.66f))
+            drawWave(canvas, left = false, inner = true, alpha = waveAlpha(0.66f))
+            drawWave(canvas, left = true, band = 1, alpha = waveAlpha(0.33f))
+            drawWave(canvas, left = false, band = 1, alpha = waveAlpha(0.33f))
+            drawWave(canvas, left = true, band = 2, alpha = waveAlpha(0f))
+            drawWave(canvas, left = false, band = 2, alpha = waveAlpha(0f))
+            canvas.restore()
+
+            if (broadcasting) {
+                phase = (phase + 0.004375f) % 1f
+                postInvalidateOnAnimation()
+            }
+        }
+
+        private fun drawLine(canvas: Canvas, startX: Float, startY: Float, stopX: Float, stopY: Float) {
+            canvas.drawLine(startX, startY, stopX, stopY, paint)
+        }
+
+        private fun waveAlpha(offset: Float): Int {
+            if (!broadcasting) return 255
+            val progress = (phase + offset) % 1f
+            return (255 * (1f - progress)).toInt().coerceIn(0, 255)
+        }
+
+        private fun drawWave(canvas: Canvas, left: Boolean, inner: Boolean = false, band: Int = 0, alpha: Int) {
+            paint.alpha = alpha
+            val inset = when {
+                inner -> 13f
+                band == 1 -> 8f
+                else -> 3f
+            }
+            val top = when {
+                inner -> 12f
+                band == 1 -> 8f
+                else -> 4f
+            }
+            val bottom = when {
+                inner -> 24f
+                band == 1 -> 29f
+                else -> 34f
+            }
+            if (left) {
+                waveBounds.set(inset, top, 31f, bottom)
+                canvas.drawArc(waveBounds, 135f, 90f, false, paint)
+            } else {
+                waveBounds.set(17f, top, 48f - inset, bottom)
+                canvas.drawArc(waveBounds, -45f, 90f, false, paint)
+            }
+        }
+    }
 }

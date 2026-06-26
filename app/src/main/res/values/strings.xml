@@ -2,10 +2,8 @@
 <resources>
     <string name="app_name">Boat Tracker</string>
     <string name="dismiss">x</string>
-    <string name="broadcast_domain">We send your data to the %1$s server.</string>
     <string name="ship">Ship</string>
     <string name="current_gps">Current GPS</string>
-    <string name="last_broadcast">Last broadcast</string>
     <string name="broadcast_position">Broadcast position</string>
     <string name="broadcast_off_warning">Your position is not visible to the organizers!</string>
     <string name="communication_error">Communication error.</string>
@@ -18,6 +16,7 @@
     <string name="save">Save</string>
     <string name="choose_event">Choose your event</string>
     <string name="language">Language</string>
+    <string name="header_photo">Header photo</string>
     <string name="language_english">English</string>
     <string name="language_hungarian">Magyar</string>
     <string name="startup_error_subtitle">GPS Boat Tracker application.</string>

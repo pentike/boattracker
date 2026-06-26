@@ -2,10 +2,8 @@
 <resources>
     <string name="app_name">Boat Tracker</string>
     <string name="dismiss">x</string>
-    <string name="broadcast_domain">Az adatokat a %1$s szerverre küldjük.</string>
     <string name="ship">Hajó</string>
     <string name="current_gps">Aktuális GPS</string>
-    <string name="last_broadcast">Utolsó küldés</string>
     <string name="broadcast_position">Pozíció küldése</string>
     <string name="broadcast_off_warning">A pozíciód nem látható a szervezők számára!</string>
     <string name="communication_error">Kommunikációs hiba.</string>
@@ -18,6 +16,7 @@
     <string name="save">Mentés</string>
     <string name="choose_event">Válassz eseményt</string>
     <string name="language">Nyelv</string>
+    <string name="header_photo">Fejléc fotó</string>
     <string name="language_english">English</string>
     <string name="language_hungarian">Magyar</string>
     <string name="startup_error_subtitle">GPS Boat Tracker alkalmazás.</string>
