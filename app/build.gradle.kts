@@ -11,8 +11,8 @@ android {
         applicationId = "hu.fenyveskupa.boattracker"
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
-        versionName = "2.0"
+        versionCode = 6
+        versionName = "2.2"
     }
     buildTypes {
         getByName("release") {

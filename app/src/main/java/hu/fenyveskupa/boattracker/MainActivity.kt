@@ -87,7 +87,9 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         buildLayout()
-        handleIntent(intent)
+        if (savedInstanceState == null) {
+            handleIntent(intent)
+        }
         renderState()
         requestRuntimePermissions()
     }
@@ -136,9 +138,18 @@ class MainActivity : Activity() {
     }
 
     private fun showShipConfirmationDialog(config: TrackerConfig) {
+        val message = TextView(this).apply {
+            text = getString(R.string.confirm_ship_message, config.shipName)
+            textSize = 26f
+            setTextColor(COLOR_TEXT)
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER_HORIZONTAL
+            includeFontPadding = false
+            setPadding(dp(24), dp(18), dp(24), dp(8))
+        }
         AlertDialog.Builder(this)
             .setTitle(R.string.confirm_ship_title)
-            .setMessage(getString(R.string.confirm_ship_message, config.shipName))
+            .setView(message)
             .setPositiveButton(R.string.confirm_ship_approve) { _, _ ->
                 initializeBackend(config.copy(shipName = TrackerPrefs.ship(this)))
             }
@@ -153,6 +164,11 @@ class MainActivity : Activity() {
             setText(config.shipName.takeUnless { it == getString(R.string.unknown_value) }.orEmpty())
             selectAll()
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS
+            textSize = 26f
+            setTextColor(COLOR_TEXT)
+            typeface = Typeface.DEFAULT_BOLD
+            includeFontPadding = false
+            setPadding(dp(24), dp(18), dp(24), dp(8))
         }
         AlertDialog.Builder(this)
             .setTitle(R.string.change_ship_title)
@@ -500,7 +516,7 @@ class MainActivity : Activity() {
         val copy = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(28), dp(16), dp(18), dp(18))
+            setPadding(dp(0), dp(16), dp(18), dp(18))
         }
         eventValue = TextView(this).apply {
             textSize = 29f
@@ -878,8 +894,8 @@ class MainActivity : Activity() {
             shape.reset()
             shape.moveTo(0f, 0f)
             shape.lineTo(w * 0.66f, 0f)
-            shape.lineTo(w * 0.505f, h - 26f)
-            shape.lineTo(0f, h - 44f)
+            shape.lineTo(w * 0.505f, h - 12f)
+            shape.lineTo(0f, h - 30f)
             shape.close()
             canvas.drawPath(shape, paint)
 

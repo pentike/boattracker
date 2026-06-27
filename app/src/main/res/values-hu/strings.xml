@@ -8,8 +8,8 @@
     <string name="broadcast_off_warning">A pozíciód nem látható a szervezők számára!</string>
     <string name="communication_error">Kommunikációs hiba.</string>
     <string name="messages">Üzenetek</string>
-    <string name="confirm_ship_title">Hajónév ellenőrzése</string>
-    <string name="confirm_ship_message">Ez a hajónév még érvényes?\n\n%1$s</string>
+    <string name="confirm_ship_title">Hajó neve</string>
+    <string name="confirm_ship_message">%1$s</string>
     <string name="confirm_ship_approve">Igen</string>
     <string name="confirm_ship_change">Módosítás</string>
     <string name="change_ship_title">Hajónév</string>
