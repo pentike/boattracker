@@ -1,6 +1,7 @@
 package hu.fenyveskupa.boattracker
 
 import android.app.Activity
+import android.content.Context
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.Gravity
@@ -16,6 +17,10 @@ class RuleDetailActivity : Activity() {
         const val EXTRA_IMAGE_RES = "imageRes"
         const val EXTRA_TITLE_RES = "titleRes"
         const val EXTRA_DESCRIPTION_RES = "descriptionRes"
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(TrackerPrefs.localizedContext(newBase))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

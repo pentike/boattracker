@@ -8,6 +8,13 @@
     <string name="broadcast_off_warning">Your position is not visible to the organizers!</string>
     <string name="communication_error">Communication error.</string>
     <string name="messages">Messages</string>
+    <string name="menu_home">Home</string>
+    <string name="menu_messages">Messages</string>
+    <string name="menu_info">Info</string>
+    <string name="no_messages">No messages yet.</string>
+    <string name="data_sent_to_server">Data is sent to this server: %1$s</string>
+    <string name="privacy_policy">Privacy policy</string>
+    <string name="privacy_policy_url">https://pentike.github.io/boattracker/privacy.html</string>
     <string name="confirm_ship_title">Confirm ship name</string>
     <string name="confirm_ship_message">Is this ship name still valid?\n\n%1$s</string>
     <string name="confirm_ship_approve">Yes</string>
@@ -23,7 +30,11 @@
     <string name="startup_error_body">Unable to fetch configuration from the server. This might be a network issue or the server may be down at the moment.\n\n Please try again later or contact your event organizer!</string>
     <string name="unknown_value">-</string>
     <string name="coordinates_format">%1$s, %2$s</string>
-    <string name="coordinates_degrees_format">%1$s°, %2$s°</string>
+    <string name="coordinates_degrees_format">%1$s, %2$s</string>
+    <string name="compass_north">N</string>
+    <string name="compass_south">S</string>
+    <string name="compass_east">E</string>
+    <string name="compass_west">W</string>
     <string name="tracking_notification_channel">Boat tracking</string>
     <string name="tracking_notification_text">Broadcasting position</string>
     <string name="racing_rules">Basic racing rules</string>

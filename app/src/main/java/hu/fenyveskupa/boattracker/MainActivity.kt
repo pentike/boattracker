@@ -24,6 +24,7 @@ import android.text.InputType
 import android.text.TextUtils
 import android.view.Gravity
 import android.view.View
+import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.widget.Button
 import android.widget.CompoundButton
@@ -36,6 +37,7 @@ import android.widget.Switch
 import android.widget.TextView
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.Locale
 import kotlin.concurrent.thread
 
 class MainActivity : Activity() {
@@ -58,6 +60,13 @@ class MainActivity : Activity() {
         const val TEXT_VALUE = 23f
         const val TEXT_SHIP = 29f
         const val TEXT_MESSAGE = 19f
+        const val BOTTOM_MENU_HEIGHT_DP = 78
+    }
+
+    private enum class MainTab {
+        HOME,
+        MESSAGES,
+        INFO,
     }
 
     private lateinit var eventValue: TextView
@@ -67,11 +76,23 @@ class MainActivity : Activity() {
     private lateinit var messageSection: LinearLayout
     private lateinit var messageValue: TextView
     private lateinit var warningSection: TextView
+    private lateinit var homeContent: LinearLayout
+    private lateinit var messagesContent: LinearLayout
+    private lateinit var infoContent: LinearLayout
     private lateinit var messageListTitle: TextView
     private lateinit var messageList: LinearLayout
+    private lateinit var emptyMessagesValue: TextView
+    private lateinit var serverInfoValue: TextView
     private lateinit var radioTowerView: RadioTowerView
     private lateinit var broadcastSwitch: Switch
     private lateinit var headerPhoto: ImageView
+    private lateinit var homeNavIcon: ImageView
+    private lateinit var homeNavText: TextView
+    private lateinit var messagesNavIcon: ImageView
+    private lateinit var messagesNavText: TextView
+    private lateinit var infoNavIcon: ImageView
+    private lateinit var infoNavText: TextView
+    private var currentTab = MainTab.HOME
     private var suppressSwitchCallback = false
 
     private val stateReceiver = object : BroadcastReceiver() {
@@ -298,7 +319,7 @@ class MainActivity : Activity() {
 
     private fun showStartupErrorPage() {
         val root = FrameLayout(this).apply {
-            setBackgroundColor(COLOR_BACKGROUND)
+            setBackgroundColor(COLOR_NAVY)
         }
         val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -312,7 +333,7 @@ class MainActivity : Activity() {
         val title = TextView(this).apply {
             setText(R.string.app_name)
             textSize = TEXT_TITLE
-            setTextColor(COLOR_TITLE)
+            setTextColor(COLOR_HEADER_TEXT)
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER_HORIZONTAL
             includeFontPadding = false
@@ -322,7 +343,7 @@ class MainActivity : Activity() {
         val subtitle = TextView(this).apply {
             setText(R.string.startup_error_subtitle)
             textSize = TEXT_EVENT
-            setTextColor(COLOR_MUTED)
+            setTextColor(COLOR_GOLD)
             gravity = Gravity.CENTER_HORIZONTAL
             includeFontPadding = false
         }
@@ -331,7 +352,7 @@ class MainActivity : Activity() {
         val text = TextView(this).apply {
             setText(R.string.startup_error_body)
             textSize = TEXT_BODY
-            setTextColor(COLOR_TEXT)
+            setTextColor(COLOR_HEADER_TEXT)
             gravity = Gravity.CENTER
             includeFontPadding = false
             setLineSpacing(dp(3).toFloat(), 1f)
@@ -343,7 +364,7 @@ class MainActivity : Activity() {
 
     private fun showEventList(events: List<StartupEvent>) {
         val root = FrameLayout(this).apply {
-            setBackgroundColor(COLOR_BACKGROUND)
+            setBackgroundColor(COLOR_NAVY)
         }
         val scroll = ScrollView(this)
         val content = LinearLayout(this).apply {
@@ -358,7 +379,7 @@ class MainActivity : Activity() {
         val title = TextView(this).apply {
             setText(R.string.choose_event)
             textSize = TEXT_TITLE
-            setTextColor(COLOR_TITLE)
+            setTextColor(COLOR_HEADER_TEXT)
             gravity = Gravity.CENTER_HORIZONTAL
             typeface = Typeface.DEFAULT_BOLD
             includeFontPadding = false
@@ -403,7 +424,7 @@ class MainActivity : Activity() {
 
     private fun addStartupLogo(parent: LinearLayout, bottomMargin: Int) {
         val logo = ImageView(this).apply {
-            setImageResource(R.drawable.ic_launcher)
+            setImageResource(R.drawable.app_icon_512)
             scaleType = ImageView.ScaleType.FIT_CENTER
         }
         parent.addView(logo, LinearLayout.LayoutParams(dp(96), dp(96)).apply {
@@ -421,7 +442,9 @@ class MainActivity : Activity() {
             orientation = LinearLayout.VERTICAL
         }
         scroll.addView(content)
-        root.addView(scroll, FrameLayout.LayoutParams(-1, -1))
+        root.addView(scroll, FrameLayout.LayoutParams(-1, -1).apply {
+            bottomMargin = dp(BOTTOM_MENU_HEIGHT_DP)
+        })
 
         addSampleHeader(content)
 
@@ -479,29 +502,187 @@ class MainActivity : Activity() {
         }
         body.addView(warningSection, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(12) })
 
-        addRulesSection(body)
-
-        messageListTitle = TextView(this).apply {
-            setText(R.string.messages)
-            textSize = TEXT_LABEL
-            setTextColor(COLOR_MUTED)
-            includeFontPadding = false
-            setPadding(0, dp(18), 0, dp(8))
-            visibility = View.GONE
+        homeContent = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
         }
-        body.addView(messageListTitle)
+        body.addView(homeContent)
+        addRulesSection(homeContent)
 
-        messageList = LinearLayout(this).apply {
+        messagesContent = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             visibility = View.GONE
         }
-        body.addView(messageList)
+        body.addView(messagesContent)
+
+        messageListTitle = statusLabel(R.string.messages).apply {
+            setPadding(0, dp(18), 0, dp(8))
+        }
+        messagesContent.addView(messageListTitle)
+
+        emptyMessagesValue = TextView(this).apply {
+            setText(R.string.no_messages)
+            textSize = TEXT_BODY
+            setTextColor(COLOR_MUTED)
+            includeFontPadding = false
+            setPadding(dp(12), dp(12), dp(12), dp(12))
+        }
+        messagesContent.addView(emptyMessagesValue)
+
+        messageList = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+        messagesContent.addView(messageList)
+
+        infoContent = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            visibility = View.GONE
+        }
+        body.addView(infoContent)
+        addInfoSection(infoContent)
+
+        val menu = bottomMenu()
+        root.addView(menu, FrameLayout.LayoutParams(-1, dp(BOTTOM_MENU_HEIGHT_DP), Gravity.BOTTOM))
+        applyBottomMenuInsets(root, scroll, menu)
+        showTab(currentTab)
 
         setContentView(root)
         configureSystemBars()
     }
 
+    private fun bottomMenu(): LinearLayout {
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            setBackgroundColor(COLOR_NAVY)
+            setPadding(dp(8), dp(6), dp(8), dp(6))
+            addView(navItem(R.drawable.ic_nav_home, R.string.menu_home, MainTab.HOME) { icon, label ->
+                homeNavIcon = icon
+                homeNavText = label
+            }, LinearLayout.LayoutParams(0, -1, 1f))
+            addView(navItem(R.drawable.ic_nav_envelope, R.string.menu_messages, MainTab.MESSAGES) { icon, label ->
+                messagesNavIcon = icon
+                messagesNavText = label
+            }, LinearLayout.LayoutParams(0, -1, 1f))
+            addView(navItem(R.drawable.ic_nav_info, R.string.menu_info, MainTab.INFO) { icon, label ->
+                infoNavIcon = icon
+                infoNavText = label
+            }, LinearLayout.LayoutParams(0, -1, 1f))
+        }
+    }
+
+    private fun applyBottomMenuInsets(root: View, scroll: ScrollView, menu: LinearLayout) {
+        val baseMenuHeight = dp(BOTTOM_MENU_HEIGHT_DP)
+        val baseLeft = dp(8)
+        val baseTop = dp(6)
+        val baseRight = dp(8)
+        val baseBottom = dp(6)
+
+        root.setOnApplyWindowInsetsListener { _, insets ->
+            val bottomInset = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                insets.getInsets(WindowInsets.Type.navigationBars()).bottom
+            } else {
+                @Suppress("DEPRECATION")
+                insets.systemWindowInsetBottom
+            }
+
+            menu.setPadding(baseLeft, baseTop, baseRight, baseBottom + bottomInset)
+            (menu.layoutParams as? FrameLayout.LayoutParams)?.let { params ->
+                params.height = baseMenuHeight + bottomInset
+                menu.layoutParams = params
+            }
+            (scroll.layoutParams as? FrameLayout.LayoutParams)?.let { params ->
+                params.bottomMargin = baseMenuHeight + bottomInset
+                scroll.layoutParams = params
+            }
+            insets
+        }
+        root.post { root.requestApplyInsets() }
+    }
+
+    private fun navItem(
+        iconRes: Int,
+        labelRes: Int,
+        tab: MainTab,
+        bind: (ImageView, TextView) -> Unit,
+    ): LinearLayout {
+        val item = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            isClickable = true
+            isFocusable = true
+            setOnClickListener { showTab(tab) }
+        }
+        val icon = ImageView(this).apply {
+            setImageResource(iconRes)
+        }
+        item.addView(icon, LinearLayout.LayoutParams(dp(28), dp(28)).apply {
+            bottomMargin = dp(4)
+        })
+        val label = TextView(this).apply {
+            setText(labelRes)
+            textSize = 13f
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+        }
+        item.addView(label)
+        bind(icon, label)
+        return item
+    }
+
+    private fun showTab(tab: MainTab) {
+        currentTab = tab
+        homeContent.visibility = if (tab == MainTab.HOME) View.VISIBLE else View.GONE
+        messagesContent.visibility = if (tab == MainTab.MESSAGES) View.VISIBLE else View.GONE
+        infoContent.visibility = if (tab == MainTab.INFO) View.VISIBLE else View.GONE
+        styleNavItem(homeNavIcon, homeNavText, tab == MainTab.HOME)
+        styleNavItem(messagesNavIcon, messagesNavText, tab == MainTab.MESSAGES)
+        styleNavItem(infoNavIcon, infoNavText, tab == MainTab.INFO)
+    }
+
+    private fun styleNavItem(icon: ImageView, label: TextView, selected: Boolean) {
+        val color = if (selected) COLOR_GOLD else COLOR_HEADER_TEXT
+        icon.setColorFilter(color)
+        label.setTextColor(color)
+    }
+
+    private fun addInfoSection(parent: LinearLayout) {
+        val title = statusLabel(R.string.menu_info).apply {
+            setPadding(0, dp(18), 0, dp(12))
+        }
+        parent.addView(title)
+
+        serverInfoValue = TextView(this).apply {
+            textSize = TEXT_BODY
+            setTextColor(COLOR_TEXT)
+            includeFontPadding = false
+            background = getDrawable(R.drawable.message_list_item_background)
+            setPadding(dp(12), dp(12), dp(12), dp(12))
+        }
+        parent.addView(serverInfoValue, LinearLayout.LayoutParams(-1, -2).apply {
+            bottomMargin = dp(12)
+        })
+
+        val privacy = TextView(this).apply {
+            setText(R.string.privacy_policy)
+            textSize = TEXT_BODY
+            setTextColor(COLOR_MESSAGE)
+            typeface = Typeface.DEFAULT_BOLD
+            includeFontPadding = false
+            paintFlags = paintFlags or Paint.UNDERLINE_TEXT_FLAG
+            background = getDrawable(R.drawable.message_list_item_background)
+            setPadding(dp(12), dp(12), dp(12), dp(12))
+            isClickable = true
+            isFocusable = true
+            setOnClickListener {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.privacy_policy_url))))
+            }
+        }
+        parent.addView(privacy)
+    }
+
     private fun addSampleHeader(parent: LinearLayout) {
+        val headerScale = headerTextScale()
         val header = FrameLayout(this).apply {
             setBackgroundColor(COLOR_NAVY_DARK)
         }
@@ -519,7 +700,7 @@ class MainActivity : Activity() {
             setPadding(dp(0), dp(16), dp(18), dp(18))
         }
         eventValue = TextView(this).apply {
-            textSize = 29f
+            textSize = 29f * headerScale
             setTextColor(COLOR_HEADER_TEXT)
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER_HORIZONTAL
@@ -531,7 +712,7 @@ class MainActivity : Activity() {
         copy.addView(eventValue, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(12) })
 
         mottoValue = TextView(this).apply {
-            textSize = 18f
+            textSize = 18f * headerScale
             setTextColor(COLOR_HEADER_TEXT)
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.ITALIC)
             gravity = Gravity.CENTER_HORIZONTAL
@@ -549,6 +730,15 @@ class MainActivity : Activity() {
         })
         parent.addView(header, LinearLayout.LayoutParams(-1, dp(188)))
         loadHeaderPhoto()
+    }
+
+    private fun headerTextScale(): Float {
+        val widthDp = resources.configuration.screenWidthDp
+        return when {
+            widthDp < 340 -> 0.82f
+            widthDp < 380 -> 0.9f
+            else -> 1f
+        }
     }
 
     private fun addBoatStatusCard(parent: LinearLayout) {
@@ -633,7 +823,7 @@ class MainActivity : Activity() {
         transmission.addView(broadcastSwitch, LinearLayout.LayoutParams(-2, -2).apply {
             gravity = Gravity.CENTER_HORIZONTAL
         })
-        card.addView(transmission, LinearLayout.LayoutParams(dp(132), -1))
+        card.addView(transmission, LinearLayout.LayoutParams(dp(142), -2))
 
         parent.addView(card, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(16) })
     }
@@ -712,13 +902,25 @@ class MainActivity : Activity() {
         shipValue.text = TrackerPrefs.ship(this).uppercase()
         coordinatesValue.text = getString(
             R.string.coordinates_degrees_format,
-            TrackerPrefs.latitude(this),
-            TrackerPrefs.longitude(this),
+            coordinateWithCompass(
+                TrackerPrefs.latitude(this),
+                positive = getString(R.string.compass_north),
+                negative = getString(R.string.compass_south),
+            ),
+            coordinateWithCompass(
+                TrackerPrefs.longitude(this),
+                positive = getString(R.string.compass_east),
+                negative = getString(R.string.compass_west),
+            ),
         )
         val msg = TrackerPrefs.message(this)
         messageSection.visibility = if (msg.isBlank()) View.GONE else View.VISIBLE
         messageValue.text = msg
         renderMessageList()
+        serverInfoValue.text = getString(
+            R.string.data_sent_to_server,
+            serverAndPort(TrackerPrefs.trackingUrl(this) ?: TrackerPrefs.initUrl(this)),
+        )
         val enabled = TrackerPrefs.enabled(this)
         warningSection.visibility = if (enabled) View.GONE else View.VISIBLE
         radioTowerView.setBroadcasting(enabled)
@@ -748,10 +950,24 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun serverAndPort(url: String): String {
+        val uri = runCatching { Uri.parse(url) }.getOrNull()
+        val host = uri?.host?.takeIf { it.isNotBlank() } ?: return url
+        val port = uri.port
+        val proto = uri.scheme
+        return if (port > 0) "$proto://$host:$port" else host
+    }
+
+    private fun coordinateWithCompass(value: String, positive: String, negative: String): String {
+        val number = value.replace(',', '.').toDoubleOrNull() ?: return value
+        val direction = if (number < 0) negative else positive
+        return String.format(Locale.getDefault(), "%.6f° %s", kotlin.math.abs(number), direction)
+    }
+
     private fun renderMessageList() {
         val messages = TrackerPrefs.messages(this)
         messageList.removeAllViews()
-        messageListTitle.visibility = if (messages.isEmpty()) View.GONE else View.VISIBLE
+        emptyMessagesValue.visibility = if (messages.isEmpty()) View.VISIBLE else View.GONE
         messageList.visibility = if (messages.isEmpty()) View.GONE else View.VISIBLE
         messages.forEach { message ->
             val item = TextView(this).apply {
@@ -769,11 +985,7 @@ class MainActivity : Activity() {
     }
 
     private fun addRulesSection(parent: LinearLayout) {
-        val title = TextView(this).apply {
-            setText(R.string.racing_rules)
-            textSize = TEXT_LABEL
-            setTextColor(COLOR_MUTED)
-            includeFontPadding = false
+        val title = statusLabel(R.string.racing_rules).apply {
             setPadding(0, dp(18), 0, dp(8))
         }
         parent.addView(title)
