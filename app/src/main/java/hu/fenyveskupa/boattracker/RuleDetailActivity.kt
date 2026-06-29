@@ -5,6 +5,8 @@ import android.content.Context
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.Gravity
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -52,7 +54,7 @@ class RuleDetailActivity : Activity() {
             adjustViewBounds = true
             scaleType = ImageView.ScaleType.FIT_CENTER
         }
-        content.addView(image, LinearLayout.LayoutParams(-1, -2))
+        content.addView(image, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT))
         val title = TextView(this).apply {
             setText(titleRes)
             textSize = 24f
@@ -71,7 +73,7 @@ class RuleDetailActivity : Activity() {
         }
         content.addView(description)
         scroll.addView(content)
-        root.addView(scroll, FrameLayout.LayoutParams(-1, -1).apply {
+        root.addView(scroll, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT).apply {
             setMargins(0, 0, 0, 0)
         })
 

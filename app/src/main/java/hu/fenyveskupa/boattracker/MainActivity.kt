@@ -24,6 +24,8 @@ import android.text.InputType
 import android.text.TextUtils
 import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.widget.Button
@@ -326,7 +328,7 @@ class MainActivity : Activity() {
             gravity = Gravity.CENTER_HORIZONTAL
             setPadding(dp(22), dp(36), dp(22), dp(36))
         }
-        root.addView(content, FrameLayout.LayoutParams(-1, -1))
+        root.addView(content, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
 
         addStartupLogo(content, bottomMargin = 24)
 
@@ -338,7 +340,7 @@ class MainActivity : Activity() {
             gravity = Gravity.CENTER_HORIZONTAL
             includeFontPadding = false
         }
-        content.addView(title, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(10) })
+        content.addView(title, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = dp(10) })
 
         val subtitle = TextView(this).apply {
             setText(R.string.startup_error_subtitle)
@@ -347,7 +349,7 @@ class MainActivity : Activity() {
             gravity = Gravity.CENTER_HORIZONTAL
             includeFontPadding = false
         }
-        content.addView(subtitle, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(18) })
+        content.addView(subtitle, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = dp(18) })
 
         val text = TextView(this).apply {
             setText(R.string.startup_error_body)
@@ -372,7 +374,7 @@ class MainActivity : Activity() {
             setPadding(dp(16), dp(20), dp(16), dp(20))
         }
         scroll.addView(content)
-        root.addView(scroll, FrameLayout.LayoutParams(-1, -1))
+        root.addView(scroll, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
 
         addStartupLogo(content, bottomMargin = 16)
 
@@ -384,7 +386,7 @@ class MainActivity : Activity() {
             typeface = Typeface.DEFAULT_BOLD
             includeFontPadding = false
         }
-        content.addView(title, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(18) })
+        content.addView(title, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = dp(18) })
 
         events.forEach { event ->
             val item = LinearLayout(this).apply {
@@ -416,7 +418,7 @@ class MainActivity : Activity() {
             }
             item.addView(name)
             item.addView(start)
-            content.addView(item, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(10) })
+            content.addView(item, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = dp(10) })
         }
         setContentView(root)
         configureSystemBars()
@@ -442,7 +444,7 @@ class MainActivity : Activity() {
             orientation = LinearLayout.VERTICAL
         }
         scroll.addView(content)
-        root.addView(scroll, FrameLayout.LayoutParams(-1, -1).apply {
+        root.addView(scroll, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT).apply {
             bottomMargin = dp(BOTTOM_MENU_HEIGHT_DP)
         })
 
@@ -484,12 +486,12 @@ class MainActivity : Activity() {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
         }
-        messageRow.addView(messageValue, LinearLayout.LayoutParams(0, -2, 1f))
+        messageRow.addView(messageValue, LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f))
         messageRow.addView(dismiss, LinearLayout.LayoutParams(dp(44), dp(44)).apply {
             leftMargin = dp(8)
         })
         messageSection.addView(messageRow)
-        body.addView(messageSection, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(12) })
+        body.addView(messageSection, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = dp(12) })
 
         warningSection = TextView(this).apply {
             setText(R.string.broadcast_off_warning)
@@ -500,7 +502,7 @@ class MainActivity : Activity() {
             setPadding(dp(12), dp(12), dp(12), dp(12))
             visibility = View.GONE
         }
-        body.addView(warningSection, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(12) })
+        body.addView(warningSection, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = dp(12) })
 
         homeContent = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -541,7 +543,7 @@ class MainActivity : Activity() {
         addInfoSection(infoContent)
 
         val menu = bottomMenu()
-        root.addView(menu, FrameLayout.LayoutParams(-1, dp(BOTTOM_MENU_HEIGHT_DP), Gravity.BOTTOM))
+        root.addView(menu, FrameLayout.LayoutParams(MATCH_PARENT, dp(BOTTOM_MENU_HEIGHT_DP), Gravity.BOTTOM))
         applyBottomMenuInsets(root, scroll, menu)
         showTab(currentTab)
 
@@ -558,15 +560,15 @@ class MainActivity : Activity() {
             addView(navItem(R.drawable.ic_nav_home, R.string.menu_home, MainTab.HOME) { icon, label ->
                 homeNavIcon = icon
                 homeNavText = label
-            }, LinearLayout.LayoutParams(0, -1, 1f))
+            }, LinearLayout.LayoutParams(0, MATCH_PARENT, 1f))
             addView(navItem(R.drawable.ic_nav_envelope, R.string.menu_messages, MainTab.MESSAGES) { icon, label ->
                 messagesNavIcon = icon
                 messagesNavText = label
-            }, LinearLayout.LayoutParams(0, -1, 1f))
+            }, LinearLayout.LayoutParams(0, MATCH_PARENT, 1f))
             addView(navItem(R.drawable.ic_nav_info, R.string.menu_info, MainTab.INFO) { icon, label ->
                 infoNavIcon = icon
                 infoNavText = label
-            }, LinearLayout.LayoutParams(0, -1, 1f))
+            }, LinearLayout.LayoutParams(0, MATCH_PARENT, 1f))
         }
     }
 
@@ -659,7 +661,7 @@ class MainActivity : Activity() {
             background = getDrawable(R.drawable.message_list_item_background)
             setPadding(dp(12), dp(12), dp(12), dp(12))
         }
-        parent.addView(serverInfoValue, LinearLayout.LayoutParams(-1, -2).apply {
+        parent.addView(serverInfoValue, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
             bottomMargin = dp(12)
         })
 
@@ -691,8 +693,8 @@ class MainActivity : Activity() {
             scaleType = ImageView.ScaleType.CENTER_CROP
             contentDescription = getString(R.string.header_photo)
         }
-        header.addView(headerPhoto, FrameLayout.LayoutParams(dp(226), -1, Gravity.END))
-        header.addView(HeaderOverlayView(this), FrameLayout.LayoutParams(-1, -1))
+        header.addView(headerPhoto, FrameLayout.LayoutParams(dp(226), MATCH_PARENT, Gravity.END))
+        header.addView(HeaderOverlayView(this), FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
 
         val copy = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -709,7 +711,7 @@ class MainActivity : Activity() {
             setLineSpacing(dp(4).toFloat(), 1f)
             visibility = View.GONE
         }
-        copy.addView(eventValue, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(12) })
+        copy.addView(eventValue, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = dp(12) })
 
         mottoValue = TextView(this).apply {
             textSize = 18f * headerScale
@@ -721,14 +723,14 @@ class MainActivity : Activity() {
             setLineSpacing(dp(3).toFloat(), 1f)
             visibility = View.GONE
         }
-        copy.addView(mottoValue, LinearLayout.LayoutParams(-1, -2))
-        header.addView(copy, FrameLayout.LayoutParams(dp(248), -1, Gravity.START))
+        copy.addView(mottoValue, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT))
+        header.addView(copy, FrameLayout.LayoutParams(dp(248), MATCH_PARENT, Gravity.START))
 
         header.addView(languageButton(COLOR_HEADER_TEXT), FrameLayout.LayoutParams(dp(48), dp(48), Gravity.TOP or Gravity.END).apply {
             topMargin = dp(8)
             rightMargin = dp(8)
         })
-        parent.addView(header, LinearLayout.LayoutParams(-1, dp(188)))
+        parent.addView(header, LinearLayout.LayoutParams(MATCH_PARENT, dp(188)))
         loadHeaderPhoto()
     }
 
@@ -762,11 +764,11 @@ class MainActivity : Activity() {
             maxLines = 2
             ellipsize = TextUtils.TruncateAt.END
         }
-        info.addView(shipValue, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(10) })
+        info.addView(shipValue, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = dp(10) })
 
         info.addView(View(this).apply {
             setBackgroundColor(0xFFD3D8E2.toInt())
-        }, LinearLayout.LayoutParams(-1, dp(1)).apply { bottomMargin = dp(10) })
+        }, LinearLayout.LayoutParams(MATCH_PARENT, dp(1)).apply { bottomMargin = dp(10) })
 
         info.addView(statusLabel(R.string.current_gps))
         coordinatesValue = TextView(this).apply {
@@ -778,7 +780,7 @@ class MainActivity : Activity() {
             maxLines = 2
         }
         info.addView(coordinatesValue)
-        card.addView(info, LinearLayout.LayoutParams(0, -2, 1f).apply { rightMargin = dp(14) })
+        card.addView(info, LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f).apply { rightMargin = dp(14) })
 
         val transmission = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -800,7 +802,7 @@ class MainActivity : Activity() {
             includeFontPadding = false
             maxLines = 2
         }
-        transmission.addView(switchLabel, LinearLayout.LayoutParams(-1, -2).apply {
+        transmission.addView(switchLabel, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
             bottomMargin = dp(18)
         })
         broadcastSwitch = Switch(this).apply {
@@ -820,12 +822,14 @@ class MainActivity : Activity() {
                 renderState()
             }
         }
-        transmission.addView(broadcastSwitch, LinearLayout.LayoutParams(-2, -2).apply {
+        transmission.addView(broadcastSwitch, LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
             gravity = Gravity.CENTER_HORIZONTAL
         })
-        card.addView(transmission, LinearLayout.LayoutParams(dp(142), -2))
+        transmission.clipChildren = false
+        transmission.clipToPadding = false
+        card.addView(transmission, LinearLayout.LayoutParams(dp(142), WRAP_CONTENT))
 
-        parent.addView(card, LinearLayout.LayoutParams(-1, -2).apply { bottomMargin = dp(16) })
+        parent.addView(card, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = dp(16) })
     }
 
     private fun statusLabel(labelRes: Int): TextView {
@@ -978,7 +982,7 @@ class MainActivity : Activity() {
                 background = getDrawable(R.drawable.message_list_item_background)
                 setPadding(dp(12), dp(10), dp(12), dp(10))
             }
-            messageList.addView(item, LinearLayout.LayoutParams(-1, -2).apply {
+            messageList.addView(item, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
                 bottomMargin = dp(8)
             })
         }
@@ -1059,8 +1063,8 @@ class MainActivity : Activity() {
             setPadding(0, dp(4), 0, 0)
         }
         copy.addView(description)
-        card.addView(copy, LinearLayout.LayoutParams(0, -2, 1f))
-        parent.addView(card, LinearLayout.LayoutParams(-1, -2).apply {
+        card.addView(copy, LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f))
+        parent.addView(card, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
             bottomMargin = dp(8)
         })
     }
