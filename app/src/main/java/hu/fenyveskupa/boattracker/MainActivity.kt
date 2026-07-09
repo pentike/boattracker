@@ -689,7 +689,7 @@ class MainActivity : Activity() {
             setBackgroundColor(COLOR_NAVY_DARK)
         }
         headerPhoto = ImageView(this).apply {
-            setImageResource(R.drawable.rule_port_starboard)
+            setImageResource(R.drawable.szabaly_1a)
             scaleType = ImageView.ScaleType.CENTER_CROP
             contentDescription = getString(R.string.header_photo)
         }
@@ -990,30 +990,30 @@ class MainActivity : Activity() {
 
     private fun addRulesSection(parent: LinearLayout) {
         val title = statusLabel(R.string.racing_rules).apply {
-            setPadding(0, dp(18), 0, dp(8))
+            setPadding(0, dp(0), 0, dp(0))
         }
         parent.addView(title)
         addRuleCard(
             parent,
-            R.drawable.rule_port_starboard,
+            R.drawable.szabaly_1a,
             R.string.rule_10_title,
             R.string.rule_10_description,
         )
         addRuleCard(
             parent,
-            R.drawable.rule_windward_leeward,
+            R.drawable.szabaly_2,
             R.string.rule_11_title,
             R.string.rule_11_description,
         )
         addRuleCard(
             parent,
-            R.drawable.rule_overtaking,
+            R.drawable.szabaly_3,
             R.string.rule_12_title,
             R.string.rule_12_description,
         )
         addRuleCard(
             parent,
-            R.drawable.rule_tacking,
+            R.drawable.szabaly_4,
             R.string.rule_13_title,
             R.string.rule_13_description,
         )
@@ -1025,7 +1025,7 @@ class MainActivity : Activity() {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             background = getDrawable(R.drawable.rule_card_background)
-            setPadding(dp(10), dp(8), dp(10), dp(8))
+            setPadding(dp(4), dp(4), dp(4), dp(4))
             isClickable = true
             isFocusable = true
             setOnClickListener {
