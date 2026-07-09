@@ -1025,7 +1025,7 @@ class MainActivity : Activity() {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             background = getDrawable(R.drawable.rule_card_background)
-            setPadding(dp(4), dp(4), dp(4), dp(4))
+            setPadding(dp(8), dp(10), dp(8), dp(10))
             isClickable = true
             isFocusable = true
             setOnClickListener {

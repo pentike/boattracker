@@ -3,10 +3,13 @@ package hu.fenyveskupa.boattracker
 import android.app.Activity
 import android.content.Context
 import android.graphics.Typeface
+import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
+import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.view.WindowInsets
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -37,14 +40,16 @@ class RuleDetailActivity : Activity() {
         }
 
         val root = FrameLayout(this).apply {
-            setBackgroundColor(0xFFFFF9E8.toInt())
+            setBackgroundColor(0xFFFAFBFD.toInt())
             setPadding(dp(12), dp(12), dp(12), dp(12))
         }
+        val rootPaddingTop = root.paddingTop
 
         val scroll = ScrollView(this).apply {
             clipToPadding = false
             setPadding(0, dp(52), 0, 0)
         }
+        val scrollPaddingTop = scroll.paddingTop
         val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(0, 0, 0, dp(20))
@@ -81,15 +86,32 @@ class RuleDetailActivity : Activity() {
             setText(R.string.dismiss)
             textSize = 20f
             setTextColor(0xFFFFFFFF.toInt())
-            background = getDrawable(R.drawable.dismiss_button_background)
+            background = getDrawable(R.drawable.rule_detail_close_background)
             includeFontPadding = false
             minWidth = dp(40)
             minHeight = dp(40)
             setOnClickListener { finish() }
         }
-        root.addView(close, FrameLayout.LayoutParams(dp(44), dp(44), Gravity.TOP or Gravity.END))
+        val closeParams = FrameLayout.LayoutParams(dp(44), dp(44), Gravity.TOP or Gravity.END)
+        root.addView(close, closeParams)
+
+        root.setOnApplyWindowInsetsListener { _, insets ->
+            val statusBarTop = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                insets.getInsets(WindowInsets.Type.statusBars()).top
+            } else {
+                @Suppress("DEPRECATION")
+                insets.systemWindowInsetTop
+            }
+            root.setPadding(root.paddingLeft, rootPaddingTop + statusBarTop, root.paddingRight, root.paddingBottom)
+            scroll.setPadding(scroll.paddingLeft, scrollPaddingTop + statusBarTop, scroll.paddingRight, scroll.paddingBottom)
+            closeParams.topMargin = statusBarTop
+            close.layoutParams = closeParams
+            insets
+        }
+        root.systemUiVisibility = root.systemUiVisibility or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
 
         setContentView(root)
+        root.post { root.requestApplyInsets() }
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
