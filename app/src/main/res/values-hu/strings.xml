@@ -9,9 +9,15 @@
     <string name="communication_error">Kommunikációs hiba.</string>
     <string name="messages">Üzenetek</string>
     <string name="menu_home">Kezdőlap</string>
+    <string name="menu_map">Térkép</string>
     <string name="menu_messages">Üzenetek</string>
     <string name="menu_info">Infó</string>
     <string name="no_messages">Még nincs üzenet.</string>
+    <string name="no_trajectory">Még nincs elküldött pozíció.</string>
+    <string name="trajectory_points">Tárolt elküldött pozíciók: %1$d</string>
+    <string name="clear_trajectory">Útvonal törlése</string>
+    <string name="clear_trajectory_confirm">Töröljük a tárolt útvonalat, és induljon újra a követés a következő elküldött pozíciótól?</string>
+    <string name="clear_trajectory_confirm_yes">Törlés és újraindítás</string>
     <string name="data_sent_to_server">Az adatokat erre a szerverre küldjük: %1$s</string>
     <string name="privacy_policy">Adatkezelési tájékoztató</string>
     <string name="privacy_policy_url">https://pentike.github.io/boattracker/privacy.html</string>

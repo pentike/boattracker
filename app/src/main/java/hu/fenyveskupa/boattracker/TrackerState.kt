@@ -23,6 +23,12 @@ data class StartupEvent(
     val configUrl: String,
 )
 
+data class TrackPoint(
+    val latitude: Double,
+    val longitude: Double,
+    val time: Long,
+)
+
 object TrackerPrefs {
     const val DEFAULT_INIT_URL = "https://fenyveskupa.hu/api/pozicio/init"
     const val STARTUP_URL = "https://fenyveskupa.hu/boattracker/startup"
@@ -41,9 +47,11 @@ object TrackerPrefs {
     private const val KEY_LAST = "last"
     private const val KEY_MESSAGE = "message"
     private const val KEY_MESSAGES = "messages"
+    private const val KEY_TRAJECTORY = "trajectory"
     private const val KEY_ENABLED = "enabled"
     private const val KEY_LANGUAGE = "language"
     private const val MAX_MESSAGES = 20
+    private const val MAX_TRAJECTORY_POINTS = 1000
 
     fun saveConfig(context: Context, config: TrackerConfig) {
         prefs(context).edit()
@@ -79,6 +87,22 @@ object TrackerPrefs {
                 json.optString(index).takeIf { it.isNotBlank() }?.let(::add)
             }
         }
+    }
+    fun trajectory(context: Context): List<TrackPoint> {
+        val raw = prefs(context).getString(KEY_TRAJECTORY, null) ?: return emptyList()
+        val json = runCatching { JSONArray(raw) }.getOrNull() ?: return emptyList()
+        return buildList {
+            for (index in 0 until json.length()) {
+                val item = json.optJSONObject(index) ?: continue
+                add(
+                    TrackPoint(
+                        latitude = item.optDouble("la"),
+                        longitude = item.optDouble("lo"),
+                        time = item.optLong("t"),
+                    ),
+                )
+            }
+        }.filter { it.latitude.isFinite() && it.longitude.isFinite() }
     }
     fun enabled(context: Context): Boolean = prefs(context).getBoolean(KEY_ENABLED, true)
     fun language(context: Context): String = prefs(context).getString(KEY_LANGUAGE, "hu") ?: "hu"
@@ -120,9 +144,27 @@ object TrackerPrefs {
 
     fun setPosition(context: Context, lat: Double, lon: Double) {
         prefs(context).edit()
-            .putString(KEY_LAT, "%.6f".format(lat))
-            .putString(KEY_LON, "%.6f".format(lon))
+            .putString(KEY_LAT, "%.6f".format(Locale.US, lat))
+            .putString(KEY_LON, "%.6f".format(Locale.US, lon))
             .apply()
+    }
+
+    fun addSentPosition(context: Context, lat: Double, lon: Double, time: Long = System.currentTimeMillis()) {
+        val next = (trajectory(context) + TrackPoint(lat, lon, time)).takeLast(MAX_TRAJECTORY_POINTS)
+        val json = JSONArray()
+        next.forEach { point ->
+            json.put(
+                JSONObject()
+                    .put("la", point.latitude)
+                    .put("lo", point.longitude)
+                    .put("t", point.time),
+            )
+        }
+        prefs(context).edit().putString(KEY_TRAJECTORY, json.toString()).apply()
+    }
+
+    fun clearTrajectory(context: Context) {
+        prefs(context).edit().putString(KEY_TRAJECTORY, "[]").apply()
     }
 
     fun setBroadcastResult(context: Context, message: String?) {

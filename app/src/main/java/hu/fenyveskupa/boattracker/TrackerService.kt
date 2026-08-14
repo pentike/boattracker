@@ -136,6 +136,7 @@ class TrackerService : Service(), LocationListener {
         network.execute {
             var nextFrequency = frequencySeconds
             var message: String? = null
+            TrackerPrefs.addSentPosition(this, location.latitude, location.longitude)
             try {
                 val connection = URL(url).openConnection() as HttpURLConnection
                 connection.requestMethod = "POST"

@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
@@ -67,6 +68,7 @@ class MainActivity : Activity() {
 
     private enum class MainTab {
         HOME,
+        MAP,
         MESSAGES,
         INFO,
     }
@@ -79,8 +81,11 @@ class MainActivity : Activity() {
     private lateinit var messageValue: TextView
     private lateinit var warningSection: TextView
     private lateinit var homeContent: LinearLayout
+    private lateinit var mapContent: LinearLayout
     private lateinit var messagesContent: LinearLayout
     private lateinit var infoContent: LinearLayout
+    private lateinit var mapView: BoatMapView
+    private lateinit var mapSummaryValue: TextView
     private lateinit var messageListTitle: TextView
     private lateinit var messageList: LinearLayout
     private lateinit var emptyMessagesValue: TextView
@@ -90,6 +95,8 @@ class MainActivity : Activity() {
     private lateinit var headerPhoto: ImageView
     private lateinit var homeNavIcon: ImageView
     private lateinit var homeNavText: TextView
+    private lateinit var mapNavIcon: ImageView
+    private lateinit var mapNavText: TextView
     private lateinit var messagesNavIcon: ImageView
     private lateinit var messagesNavText: TextView
     private lateinit var infoNavIcon: ImageView
@@ -510,6 +517,13 @@ class MainActivity : Activity() {
         body.addView(homeContent)
         addRulesSection(homeContent)
 
+        mapContent = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            visibility = View.GONE
+        }
+        body.addView(mapContent)
+        addMapSection(mapContent)
+
         messagesContent = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             visibility = View.GONE
@@ -560,6 +574,10 @@ class MainActivity : Activity() {
             addView(navItem(R.drawable.ic_nav_home, R.string.menu_home, MainTab.HOME) { icon, label ->
                 homeNavIcon = icon
                 homeNavText = label
+            }, LinearLayout.LayoutParams(0, MATCH_PARENT, 1f))
+            addView(navItem(R.drawable.ic_nav_map, R.string.menu_map, MainTab.MAP) { icon, label ->
+                mapNavIcon = icon
+                mapNavText = label
             }, LinearLayout.LayoutParams(0, MATCH_PARENT, 1f))
             addView(navItem(R.drawable.ic_nav_envelope, R.string.menu_messages, MainTab.MESSAGES) { icon, label ->
                 messagesNavIcon = icon
@@ -635,9 +653,11 @@ class MainActivity : Activity() {
     private fun showTab(tab: MainTab) {
         currentTab = tab
         homeContent.visibility = if (tab == MainTab.HOME) View.VISIBLE else View.GONE
+        mapContent.visibility = if (tab == MainTab.MAP) View.VISIBLE else View.GONE
         messagesContent.visibility = if (tab == MainTab.MESSAGES) View.VISIBLE else View.GONE
         infoContent.visibility = if (tab == MainTab.INFO) View.VISIBLE else View.GONE
         styleNavItem(homeNavIcon, homeNavText, tab == MainTab.HOME)
+        styleNavItem(mapNavIcon, mapNavText, tab == MainTab.MAP)
         styleNavItem(messagesNavIcon, messagesNavText, tab == MainTab.MESSAGES)
         styleNavItem(infoNavIcon, infoNavText, tab == MainTab.INFO)
     }
@@ -646,6 +666,58 @@ class MainActivity : Activity() {
         val color = if (selected) COLOR_GOLD else COLOR_HEADER_TEXT
         icon.setColorFilter(color)
         label.setTextColor(color)
+    }
+
+    private fun addMapSection(parent: LinearLayout) {
+        val title = statusLabel(R.string.menu_map).apply {
+            setPadding(0, dp(0), 0, dp(8))
+        }
+        parent.addView(title)
+
+        mapView = BoatMapView(this).apply {
+            setBoatBitmap(BitmapFactory.decodeResource(resources, R.drawable.app_icon_512))
+        }
+        parent.addView(mapView, LinearLayout.LayoutParams(MATCH_PARENT, dp(360)).apply {
+            bottomMargin = dp(12)
+        })
+
+        mapSummaryValue = TextView(this).apply {
+            textSize = TEXT_LABEL
+            setTextColor(COLOR_MUTED)
+            includeFontPadding = false
+            setPadding(dp(12), dp(10), dp(12), dp(10))
+            background = getDrawable(R.drawable.message_list_item_background)
+        }
+        parent.addView(mapSummaryValue, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
+            bottomMargin = dp(12)
+        })
+
+        val clearButton = Button(this).apply {
+            setText(R.string.clear_trajectory)
+            textSize = TEXT_LABEL
+            setTextColor(COLOR_NAVY)
+            typeface = Typeface.DEFAULT_BOLD
+            isAllCaps = false
+            setOnClickListener { confirmClearTrajectory() }
+        }
+        parent.addView(clearButton, LinearLayout.LayoutParams(MATCH_PARENT, dp(48)))
+    }
+
+    private fun confirmClearTrajectory() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.clear_trajectory)
+            .setMessage(R.string.clear_trajectory_confirm)
+            .setPositiveButton(R.string.clear_trajectory_confirm_yes) { _, _ ->
+                TrackerPrefs.clearTrajectory(this)
+                TrackerPrefs.trackingUrl(this)?.let { url ->
+                    if (hasLocationPermission()) {
+                        startTrackerService(url)
+                    }
+                }
+                renderState()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     private fun addInfoSection(parent: LinearLayout) {
@@ -917,6 +989,10 @@ class MainActivity : Activity() {
                 negative = getString(R.string.compass_west),
             ),
         )
+        val trajectory = TrackerPrefs.trajectory(this)
+        val currentPoint = currentPositionPoint()
+        mapView.setTrack(trajectory, currentPoint)
+        mapSummaryValue.text = getString(R.string.trajectory_points, trajectory.size)
         val msg = TrackerPrefs.message(this)
         messageSection.visibility = if (msg.isBlank()) View.GONE else View.VISIBLE
         messageValue.text = msg
@@ -931,6 +1007,13 @@ class MainActivity : Activity() {
         suppressSwitchCallback = true
         broadcastSwitch.isChecked = enabled
         suppressSwitchCallback = false
+    }
+
+    private fun currentPositionPoint(): TrackPoint? {
+        val latitude = TrackerPrefs.latitude(this).replace(',', '.').toDoubleOrNull()
+        val longitude = TrackerPrefs.longitude(this).replace(',', '.').toDoubleOrNull()
+        if (latitude == null || longitude == null) return null
+        return TrackPoint(latitude, longitude, System.currentTimeMillis())
     }
 
     private fun loadHeaderPhoto() {
@@ -1123,6 +1206,165 @@ class MainActivity : Activity() {
             shape.cubicTo(w * 0.68f, h - 14f, w * 0.28f, h - 15f, 0f, h - 32f)
             shape.close()
             canvas.drawPath(shape, paint)
+        }
+    }
+
+    private class BoatMapView(context: Context) : View(context) {
+        private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        private val path = Path()
+        private val markerBounds = RectF()
+        private var trajectory: List<TrackPoint> = emptyList()
+        private var currentPoint: TrackPoint? = null
+        private var boatBitmap: Bitmap? = null
+
+        fun setBoatBitmap(bitmap: Bitmap?) {
+            boatBitmap = bitmap
+            invalidate()
+        }
+
+        fun setTrack(points: List<TrackPoint>, current: TrackPoint?) {
+            trajectory = points
+            currentPoint = current
+            invalidate()
+        }
+
+        override fun onDraw(canvas: Canvas) {
+            super.onDraw(canvas)
+            drawMapBackground(canvas)
+
+            val pointsForBounds = buildList {
+                addAll(trajectory)
+                currentPoint?.let(::add)
+            }
+            if (pointsForBounds.isEmpty()) {
+                drawEmptyState(canvas)
+                return
+            }
+
+            val bounds = GeoBounds(pointsForBounds)
+            if (trajectory.size >= 2) {
+                drawTrajectory(canvas, bounds)
+            }
+            trajectory.firstOrNull()?.let { drawStartMarker(canvas, project(it, bounds)) }
+            currentPoint?.let { drawBoatMarker(canvas, project(it, bounds)) }
+                ?: trajectory.lastOrNull()?.let { drawBoatMarker(canvas, project(it, bounds)) }
+        }
+
+        private fun drawMapBackground(canvas: Canvas) {
+            paint.style = Paint.Style.FILL
+            paint.color = 0xFFE8F4F7.toInt()
+            canvas.drawRoundRect(0f, 0f, width.toFloat(), height.toFloat(), 16f, 16f, paint)
+
+            paint.style = Paint.Style.STROKE
+            paint.strokeWidth = 1f * resources.displayMetrics.density
+            paint.color = 0x66FFFFFF
+            val grid = 56f * resources.displayMetrics.density
+            var x = grid
+            while (x < width) {
+                canvas.drawLine(x, 0f, x, height.toFloat(), paint)
+                x += grid
+            }
+            var y = grid
+            while (y < height) {
+                canvas.drawLine(0f, y, width.toFloat(), y, paint)
+                y += grid
+            }
+
+            paint.strokeWidth = 1.5f * resources.displayMetrics.density
+            paint.color = 0x33071F49
+            canvas.drawRoundRect(1f, 1f, width - 1f, height - 1f, 16f, 16f, paint)
+        }
+
+        private fun drawEmptyState(canvas: Canvas) {
+            paint.style = Paint.Style.FILL
+            paint.color = 0xFF4F635E.toInt()
+            paint.textAlign = Paint.Align.CENTER
+            paint.textSize = 16f * resources.displayMetrics.scaledDensity
+            canvas.drawText(context.getString(R.string.no_trajectory), width / 2f, height / 2f, paint)
+        }
+
+        private fun drawTrajectory(canvas: Canvas, bounds: GeoBounds) {
+            path.reset()
+            trajectory.forEachIndexed { index, point ->
+                val projected = project(point, bounds)
+                if (index == 0) {
+                    path.moveTo(projected.first, projected.second)
+                } else {
+                    path.lineTo(projected.first, projected.second)
+                }
+            }
+            paint.style = Paint.Style.STROKE
+            paint.strokeCap = Paint.Cap.ROUND
+            paint.strokeJoin = Paint.Join.ROUND
+            paint.strokeWidth = 7f * resources.displayMetrics.density
+            paint.color = 0x66031633
+            canvas.drawPath(path, paint)
+            paint.strokeWidth = 4f * resources.displayMetrics.density
+            paint.color = COLOR_GOLD
+            canvas.drawPath(path, paint)
+        }
+
+        private fun drawStartMarker(canvas: Canvas, projected: Pair<Float, Float>) {
+            val (x, y) = projected
+            paint.style = Paint.Style.STROKE
+            paint.strokeWidth = 3f * resources.displayMetrics.density
+            paint.strokeCap = Paint.Cap.ROUND
+            paint.color = COLOR_NAVY
+            canvas.drawLine(x, y, x, y - 34f * resources.displayMetrics.density, paint)
+
+            paint.style = Paint.Style.FILL
+            paint.color = COLOR_GOLD
+            path.reset()
+            path.moveTo(x, y - 34f * resources.displayMetrics.density)
+            path.lineTo(x + 24f * resources.displayMetrics.density, y - 27f * resources.displayMetrics.density)
+            path.lineTo(x, y - 20f * resources.displayMetrics.density)
+            path.close()
+            canvas.drawPath(path, paint)
+
+            paint.color = COLOR_NAVY
+            canvas.drawCircle(x, y, 5f * resources.displayMetrics.density, paint)
+        }
+
+        private fun drawBoatMarker(canvas: Canvas, projected: Pair<Float, Float>) {
+            val size = 46f * resources.displayMetrics.density
+            val half = size / 2f
+            val maxLeft = (width - size - 4f).coerceAtLeast(4f)
+            val maxTop = (height - size - 4f).coerceAtLeast(4f)
+            val left = (projected.first - half).coerceIn(4f, maxLeft)
+            val top = (projected.second - half).coerceIn(4f, maxTop)
+            markerBounds.set(left, top, left + size, top + size)
+
+            paint.style = Paint.Style.FILL
+            paint.color = Color.WHITE
+            canvas.drawOval(markerBounds, paint)
+            boatBitmap?.let { bitmap ->
+                canvas.drawBitmap(bitmap, null, markerBounds, null)
+            } ?: run {
+                paint.color = COLOR_NAVY
+                canvas.drawCircle(markerBounds.centerX(), markerBounds.centerY(), half * 0.6f, paint)
+            }
+            paint.style = Paint.Style.STROKE
+            paint.strokeWidth = 3f * resources.displayMetrics.density
+            paint.color = COLOR_NAVY
+            canvas.drawOval(markerBounds, paint)
+        }
+
+        private fun project(point: TrackPoint, bounds: GeoBounds): Pair<Float, Float> {
+            val padding = 34f * resources.displayMetrics.density
+            val plotWidth = (width - padding * 2f).coerceAtLeast(1f)
+            val plotHeight = (height - padding * 2f).coerceAtLeast(1f)
+            val x = padding + ((point.longitude - bounds.minLon) / bounds.lonSpan).toFloat() * plotWidth
+            val y = height - padding - ((point.latitude - bounds.minLat) / bounds.latSpan).toFloat() * plotHeight
+            return x.coerceIn(padding, width - padding) to y.coerceIn(padding, height - padding)
+        }
+
+        private class GeoBounds(points: List<TrackPoint>) {
+            val minLat = points.minOf { it.latitude }
+            private val maxLat = points.maxOf { it.latitude }
+            val minLon = points.minOf { it.longitude }
+            private val maxLon = points.maxOf { it.longitude }
+            val latSpan = (maxLat - minLat).coerceAtLeast(0.001)
+            val lonSpan = (maxLon - minLon).coerceAtLeast(0.001)
         }
     }
 
