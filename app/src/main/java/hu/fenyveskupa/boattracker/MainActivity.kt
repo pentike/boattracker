@@ -60,7 +60,7 @@ class MainActivity : Activity() {
         const val TEXT_EVENT = 20f
         const val TEXT_BODY = 19f
         const val TEXT_LABEL = 15f
-        const val TEXT_VALUE = 23f
+        const val TEXT_VALUE = 20f
         const val TEXT_SHIP = 29f
         const val TEXT_MESSAGE = 19f
         const val BOTTOM_MENU_HEIGHT_DP = 78
@@ -675,7 +675,7 @@ class MainActivity : Activity() {
         parent.addView(title)
 
         mapView = BoatMapView(this).apply {
-            setBoatBitmap(BitmapFactory.decodeResource(resources, R.drawable.app_icon_512))
+            setBoatBitmap(BitmapFactory.decodeResource(resources, R.drawable.map_boat_marker_512))
         }
         parent.addView(mapView, LinearLayout.LayoutParams(MATCH_PARENT, dp(360)).apply {
             bottomMargin = dp(12)
@@ -1334,19 +1334,12 @@ class MainActivity : Activity() {
             val top = (projected.second - half).coerceIn(4f, maxTop)
             markerBounds.set(left, top, left + size, top + size)
 
-            paint.style = Paint.Style.FILL
-            paint.color = Color.WHITE
-            canvas.drawOval(markerBounds, paint)
             boatBitmap?.let { bitmap ->
                 canvas.drawBitmap(bitmap, null, markerBounds, null)
             } ?: run {
                 paint.color = COLOR_NAVY
                 canvas.drawCircle(markerBounds.centerX(), markerBounds.centerY(), half * 0.6f, paint)
             }
-            paint.style = Paint.Style.STROKE
-            paint.strokeWidth = 3f * resources.displayMetrics.density
-            paint.color = COLOR_NAVY
-            canvas.drawOval(markerBounds, paint)
         }
 
         private fun project(point: TrackPoint, bounds: GeoBounds): Pair<Float, Float> {
