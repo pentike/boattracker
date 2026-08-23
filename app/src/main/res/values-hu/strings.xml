@@ -25,7 +25,7 @@
     <string name="confirm_ship_message">%1$s</string>
     <string name="confirm_ship_approve">Igen</string>
     <string name="confirm_ship_change">Módosítás</string>
-    <string name="change_ship_title">Hajónév</string>
+    <string name="change_ship_title">A hajód neve</string>
     <string name="save">Mentés</string>
     <string name="choose_event">Válassz eseményt</string>
     <string name="language">Nyelv</string>

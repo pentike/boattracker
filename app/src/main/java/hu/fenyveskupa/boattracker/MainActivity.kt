@@ -160,10 +160,8 @@ class MainActivity : Activity() {
 
     private fun handleDirectStartup() {
         val savedConfig = TrackerPrefs.savedConfig(this)
-        if (savedConfig == null) {
-            fetchStartupEvents()
-            return
-        }
+            ?: parseTrackerConfig(TrackerPrefs.DEFAULT_INIT_URL)
+            ?: return
         showShipConfirmationDialog(savedConfig)
     }
 
@@ -189,9 +187,10 @@ class MainActivity : Activity() {
             .show()
     }
 
-    private fun showShipNameDialog(config: TrackerConfig) {
+    private fun showShipNameDialog(config: TrackerConfig? = null) {
+        val currentShipName = config?.shipName ?: TrackerPrefs.ship(this)
         val input = EditText(this).apply {
-            setText(config.shipName.takeUnless { it == getString(R.string.unknown_value) }.orEmpty())
+            setText(currentShipName.takeUnless { it == getString(R.string.unknown_value) }.orEmpty())
             selectAll()
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS
             textSize = 26f
@@ -206,7 +205,11 @@ class MainActivity : Activity() {
             .setPositiveButton(R.string.save) { _, _ ->
                 val shipName = input.text.toString().trim().ifBlank { getString(R.string.unknown_value) }
                 TrackerPrefs.setShip(this, shipName)
-                initializeBackend(config.copy(shipName = shipName))
+                if (config == null) {
+                    renderState()
+                } else {
+                    initializeBackend(config.copy(shipName = shipName))
+                }
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
@@ -835,6 +838,9 @@ class MainActivity : Activity() {
             includeFontPadding = false
             maxLines = 2
             ellipsize = TextUtils.TruncateAt.END
+            isClickable = true
+            isFocusable = true
+            setOnClickListener { showShipNameDialog() }
         }
         info.addView(shipValue, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { bottomMargin = dp(10) })
 

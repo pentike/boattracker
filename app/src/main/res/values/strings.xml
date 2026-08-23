@@ -25,7 +25,7 @@
     <string name="confirm_ship_message">Is this ship name still valid?\n\n%1$s</string>
     <string name="confirm_ship_approve">Yes</string>
     <string name="confirm_ship_change">Change</string>
-    <string name="change_ship_title">Ship name</string>
+    <string name="change_ship_title">Your ships name</string>
     <string name="save">Save</string>
     <string name="choose_event">Choose your event</string>
     <string name="language">Language</string>
